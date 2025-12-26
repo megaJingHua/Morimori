@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { AuthProvider } from './context/AuthContext';
+import { GameTimeProvider } from './context/GameTimeContext';
 import { Layout } from './components/mori/Layout';
 import { LandingPage } from './components/mori/LandingPage';
 import { ParentingSection } from './components/mori/ParentingSection';
@@ -27,8 +29,12 @@ export default function App() {
   };
 
   return (
-    <Layout currentView={currentView} setView={setCurrentView}>
-      {renderView()}
-    </Layout>
+    <AuthProvider>
+      <GameTimeProvider>
+        <Layout currentView={currentView} setView={setCurrentView}>
+          {renderView()}
+        </Layout>
+      </GameTimeProvider>
+    </AuthProvider>
   );
 }

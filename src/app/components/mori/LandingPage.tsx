@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
 import {
   BookOpen,
   Gamepad2,
@@ -13,7 +14,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import heroBackground from "figma:asset/a41565d229b93ac7f93d417944180fbbb5e805e0.png";
-import parentingImage from "figma:asset/5bf196bf98de0be7f8a89a21a71a0abd0d5244c0.png";
+import parentingImage from "figma:asset/b803e547aecb3c070801f0296790f71bfd2e84e6.png";
 import parentingGamesImage from "figma:asset/3a8f0f48e24c2cab1407dbd993d75ebd041c2123.png";
 import technicalImage from "figma:asset/a2e2ff1fcf8ffa0e08683bfc79e7372882b549b3.png";
 
@@ -22,6 +23,27 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ setView }: LandingPageProps) {
+  const [visitCount, setVisitCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+        try {
+            const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/visit-count`, {
+                headers: {
+                    'Authorization': `Bearer ${publicAnonKey}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setVisitCount(data.count);
+            }
+        } catch (error) {
+            console.error('Failed to fetch visit count:', error);
+        }
+    };
+    fetchCount();
+  }, []);
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -81,6 +103,22 @@ export function LandingPage({ setView }: LandingPageProps) {
           >
             這裡沒有完美的教養SOP，只有被理解的溫暖、好玩的親子遊戲，還有一點點工程師媽媽的邏輯思考。
           </motion.p>
+
+          {visitCount !== null && (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="flex items-center justify-center gap-2 pt-4"
+            >
+                <div className="flex items-center gap-2 bg-white/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm hover:bg-white/50 transition-colors cursor-default">
+                    <User className="w-4 h-4 text-emerald-700" />
+                    <span className="text-sm text-emerald-900 font-medium">
+                        已有 <span className="font-bold text-emerald-700">{visitCount.toLocaleString()}</span> 位家長造訪
+                    </span>
+                </div>
+            </motion.div>
+          )}
         </div>
       </section>
 
@@ -94,7 +132,10 @@ export function LandingPage({ setView }: LandingPageProps) {
       >
         {/* Parenting Articles */}
         <motion.div variants={item} className="h-full">
-          <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-orange-50/50">
+          <Card 
+            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-orange-50/50 cursor-pointer"
+            onClick={() => setView("parenting")}
+          >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
                 src={parentingImage}
@@ -125,7 +166,10 @@ export function LandingPage({ setView }: LandingPageProps) {
 
         {/* Parenting Games */}
         <motion.div variants={item} className="h-full">
-          <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-emerald-50/50">
+          <Card 
+            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-emerald-50/50 cursor-pointer"
+            onClick={() => setView("games")}
+          >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
                 src={parentingGamesImage}
@@ -157,7 +201,10 @@ export function LandingPage({ setView }: LandingPageProps) {
 
         {/* Technical Blog */}
         <motion.div variants={item} className="h-full">
-          <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-slate-50/50">
+          <Card 
+            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-slate-50/50 cursor-pointer"
+            onClick={() => setView("tech")}
+          >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
                 src={technicalImage}

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Clock, User, Check, RefreshCw, Star, Trophy } from 'lucide-react';
+import { ArrowLeft, Clock, User, Check, RefreshCw, Star, Trophy, Moon, Home, Hourglass } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { Dialog, DialogContent } from '../ui/dialog';
+import { useGameTime } from '../../context/GameTimeContext';
+import animalsSprite from 'figma:asset/ddad2db55c042ae5dcdcdd8db2cb4ffc2b86c3e9.png';
 
 // Game Types
 interface Game {
@@ -39,6 +41,28 @@ const GAMES: Game[] = [
   }
 ];
 
+function FloatingTimer() {
+  const { dailyLimit, timeUsed, isPlaying } = useGameTime();
+  const remainingSeconds = Math.max(0, dailyLimit * 60 - timeUsed);
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  const isLow = remainingSeconds < 300; // Less than 5 mins
+
+  return (
+    <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-5 py-3 rounded-full shadow-xl bg-white border border-stone-100 animate-in fade-in slide-in-from-bottom-4">
+      <div className={`p-2 rounded-full ${isLow ? 'bg-orange-100 text-orange-500' : 'bg-emerald-100 text-emerald-500'}`}>
+         <Hourglass className={`w-5 h-5 ${isPlaying ? 'animate-pulse' : ''}`} />
+      </div>
+      <div className="flex flex-col items-start">
+         <span className="text-xs text-stone-400 font-medium">剩餘時間</span>
+         <span className={`text-xl font-bold font-mono leading-none ${isLow ? 'text-orange-500' : 'text-stone-700'}`}>
+            {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+         </span>
+      </div>
+    </div>
+  );
+}
+
 export function GameSection() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
 
@@ -48,6 +72,7 @@ export function GameSection() {
 
   return (
     <div className="space-y-8 py-8">
+      <FloatingTimer />
       <div className="text-center space-y-4 mb-12">
         <h2 className="text-3xl font-bold text-stone-800">親子遊戲大廳</h2>
         <p className="text-stone-500 max-w-2xl mx-auto">
@@ -106,11 +131,12 @@ export function GameSection() {
 
 // --- Matching Game Component ---
 
-const EMOJIS = ['🦁', '🐘', '🐰', '🦊', '🐼', '🐨'];
+// Top-Left: Deer (0), Top-Right: Rabbit (1), Bottom-Left: Lion (2), Bottom-Right: Bear (3)
+const ANIMAL_INDICES = [0, 1, 2, 3];
 
 interface CardItem {
   id: number;
-  content: string;
+  animalIndex: number;
   isFlipped: boolean;
   isMatched: boolean;
 }
@@ -120,20 +146,54 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [isWon, setIsWon] = useState(false);
   const [moves, setMoves] = useState(0);
+  const { startTimer, stopTimer, isTimeUp } = useGameTime();
+
+  useEffect(() => {
+    startTimer();
+    return () => stopTimer();
+  }, []);
 
   useEffect(() => {
     shuffleCards();
   }, []);
 
+  if (isTimeUp) {
+      return (
+          <div className="fixed inset-0 z-50 bg-stone-900/95 backdrop-blur-sm flex items-center justify-center p-4">
+              <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="max-w-md w-full bg-white rounded-3xl p-8 text-center space-y-6 shadow-2xl"
+              >
+                  <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                      <Moon className="w-12 h-12 text-indigo-500" />
+                  </div>
+                  <div className="space-y-2">
+                      <h2 className="text-2xl font-bold text-stone-800">時間到囉！休息一下吧</h2>
+                      <p className="text-stone-500 leading-relaxed">
+                          今天的眼睛運動時間結束了。<br/>
+                          爸爸媽媽，我們一起去喝杯水、看看遠方吧！
+                      </p>
+                  </div>
+                  <div className="pt-4">
+                      <Button onClick={onExit} size="lg" className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 h-12 text-lg">
+                          <Home className="w-5 h-5 mr-2" />
+                          回到大廳
+                      </Button>
+                  </div>
+              </motion.div>
+          </div>
+      );
+  }
+
   const shuffleCards = () => {
-    // Select 4 emojis for 8 cards
-    const gameEmojis = EMOJIS.slice(0, 4);
-    const duplicated = [...gameEmojis, ...gameEmojis];
+    // Select all 4 animals for 8 cards
+    const duplicated = [...ANIMAL_INDICES, ...ANIMAL_INDICES];
     const shuffled = duplicated
       .sort(() => Math.random() - 0.5)
-      .map((emoji, index) => ({
+      .map((animalIndex, index) => ({
         id: index,
-        content: emoji,
+        animalIndex: animalIndex,
         isFlipped: false,
         isMatched: false,
       }));
@@ -165,7 +225,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
     const firstCard = currentCards.find(c => c.id === firstId);
     const secondCard = currentCards.find(c => c.id === secondId);
 
-    if (firstCard?.content === secondCard?.content) {
+    if (firstCard?.animalIndex === secondCard?.animalIndex) {
       // Match!
       setTimeout(() => {
         const matchedCards = currentCards.map(c => 
@@ -197,6 +257,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
 
   return (
     <div className="max-w-4xl mx-auto py-8 text-center">
+      <FloatingTimer />
       <div className="flex justify-between items-center mb-8">
         <Button variant="ghost" onClick={onExit} className="text-stone-500">
           <ArrowLeft className="w-4 h-4 mr-2" /> 離開遊戲
@@ -233,12 +294,31 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
                         
                         {/* Back (Revealed) */}
                         <div 
-                            className={`absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-md flex items-center justify-center text-6xl border-4
+                            className={`absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-md flex items-center justify-center overflow-hidden border-4
                             ${card.isMatched ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-emerald-400'}
                             `}
                             style={{ transform: "rotateY(180deg)" }}
                         >
-                            {card.content}
+                            {/* Sprite Logic: 2x2 grid. 
+                                0: 0% 0% (Deer)
+                                1: 100% 0% (Rabbit)
+                                2: 0% 100% (Lion)
+                                3: 100% 100% (Bear)
+                            */}
+                            <div className="w-full h-full relative overflow-hidden">
+                                <img 
+                                    src={animalsSprite} 
+                                    alt="animal"
+                                    className="absolute max-w-none block"
+                                    style={{
+                                        width: '200%',
+                                        height: '200%',
+                                        top: Math.floor(card.animalIndex / 2) === 1 ? '-100%' : '0%',
+                                        left: (card.animalIndex % 2) === 1 ? '-100%' : '0%',
+                                        objectFit: 'cover'
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 </motion.div>

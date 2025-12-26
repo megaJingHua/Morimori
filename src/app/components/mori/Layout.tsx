@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { TreePine, BookOpen, Gamepad2, Code, User, Menu, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import { Toaster } from 'sonner';
 
 // Let's assume standard shadcn utils are at src/app/components/ui/utils.ts or src/lib/utils.ts. 
 // Based on file list: /src/app/components/ui/utils.ts exists. So path is ../ui/utils
@@ -134,6 +135,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
           <p className="text-stone-300 text-xs mt-8">© 2024 Mori Mori Logic. All rights reserved.</p>
         </div>
       </footer>
+      <Toaster />
     </div>
   );
 }

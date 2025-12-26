@@ -1,55 +1,220 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Clock, Calendar, Heart, Share2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Heart, Share2, MessageCircle, Check, Star, Wind, Shield, HeartHandshake, Sparkles, Eye, Facebook, Link, Instagram, Loader2, Bookmark } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-
-// Mock Data
-const ARTICLES = [
-  {
-    id: 1,
-    title: "為什麼孩子總是講不聽？其實他只是想被理解",
-    summary: "當我們急著說教時，往往忽略了孩子眼中的世界。試著蹲下來，用他的高度看世界，你會發現...",
-    author: "寶哥媽媽",
-    date: "2024.12.26",
-    readTime: "5 min",
-    category: "情緒教養",
-    image: "https://images.unsplash.com/photo-1659184619594-ef7e655b843e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwYXJlbnQlMjBhbmQlMjBjaGlsZCUyMHJlYWRpbmclMjBib29rJTIwaGFwcHklMjB3YXJtfGVufDF8fHx8MTc2NjcxOTYzOXww&ixlib=rb-4.1.0&q=80&w=1080"
-  },
-  {
-    id: 2,
-    title: "放下手機 10 分鐘，換來孩子一整天的笑臉",
-    summary: "高品質的陪伴不在於時間長短，而在於「全心全意」。分享三個不需要道具的簡單親子互動...",
-    author: "寶哥媽媽",
-    date: "2024.12.20",
-    readTime: "3 min",
-    category: "親子互動",
-    image: "https://images.unsplash.com/photo-1670234794408-030a53941f87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraWRzJTIwcGxheWluZyUyMG1hdGNoaW5nJTIwZ2FtZSUyMGNhcmRzJTIwaGFwcHl8ZW58MXx8fHwxNzY2NzE5NjM4fDA&ixlib=rb-4.1.0&q=80&w=1080"
-  },
-  {
-    id: 3,
-    title: "工程師爸爸的觀察：孩子的邏輯其實比我們強",
-    summary: "別小看孩子的「為什麼」，那是最純粹的邏輯思考。如何保護孩子的好奇心，而不是用標準答案扼殺它...",
-    author: "森森爸",
-    date: "2024.12.15",
-    readTime: "8 min",
-    category: "邏輯思考",
-    image: "https://images.unsplash.com/photo-1608682285597-156feb50eb4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwaG9tZSUyMG9mZmljZSUyMHdvcmtzcGFjZSUyMGNsZWFufGVufDF8fHx8MTc2NjcxOTYzOXww&ixlib=rb-4.1.0&q=80&w=1080"
-  }
-];
+import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import authorAvatar from 'figma:asset/8914be7595adbe188e1cc48085e2f7a02a480323.png';
+import articleImage from 'figma:asset/dba979c5a486a9cc2a9a2ace1d227a67ee1c9034.png';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { toast } from "sonner";
+import { useAuth } from '../../context/AuthContext';
+import { ARTICLES } from '../../data/articles';
+import { ArticleDetail } from './ArticleDetail';
 
 export function ParentingSection() {
+  const { user, session } = useAuth();
   const [selectedArticleId, setSelectedArticleId] = useState<number | null>(null);
+  const [readCounts, setReadCounts] = useState<Record<string, number>>({});
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [collectionCounts, setCollectionCounts] = useState<Record<string, number>>({});
+  const [userLikes, setUserLikes] = useState<string[]>([]);
+  const [userCollections, setUserCollections] = useState<string[]>([]);
+
+  // Fetch read counts, like counts, and collection counts on mount
+  useEffect(() => {
+    const fetchCounts = async () => {
+        try {
+            // Read Counts
+            const readRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/counts`, {
+                 headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+            });
+            if (readRes.ok) {
+                const data = await readRes.json();
+                setReadCounts(data.counts);
+            }
+
+            // Like Counts
+            const likeRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/likes`, {
+                headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+            });
+            if (likeRes.ok) {
+                const data = await likeRes.json();
+                setLikeCounts(data.counts);
+            }
+
+            // Collection Counts
+            const collectionRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/collection-counts`, {
+                headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+            });
+            if (collectionRes.ok) {
+                const data = await collectionRes.json();
+                setCollectionCounts(data.counts);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    fetchCounts();
+  }, []);
+
+  // Fetch user likes and collections when user changes
+  useEffect(() => {
+      const fetchUserData = async () => {
+          if (!session?.access_token) return;
+          try {
+              // Likes
+              const likesRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/user-likes`, {
+                  headers: { 
+                      'Authorization': `Bearer ${publicAnonKey}`,
+                      'X-Access-Token': session.access_token
+                  }
+              });
+              if (likesRes.ok) {
+                  const data = await likesRes.json();
+                  setUserLikes(data.likes);
+              }
+
+              // Collections
+              const collectionsRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/user-collections`, {
+                  headers: { 
+                      'Authorization': `Bearer ${publicAnonKey}`,
+                      'X-Access-Token': session.access_token
+                  }
+              });
+              if (collectionsRes.ok) {
+                  const data = await collectionsRes.json();
+                  setUserCollections(data.collections);
+              }
+          } catch (e) {
+              console.error(e);
+          }
+      };
+      if (user) {
+          fetchUserData();
+      } else {
+          setUserLikes([]);
+          setUserCollections([]);
+      }
+  }, [user, session]);
+
+  const handleArticleClick = async (id: number) => {
+      setSelectedArticleId(id);
+      try {
+          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/view`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+          });
+          if (response.ok) {
+              const data = await response.json();
+              setReadCounts(prev => ({ ...prev, [id]: data.count }));
+          }
+      } catch (e) { console.error(e); }
+  }
+
+  const handleToggleLike = async (id: number) => {
+      if (!user || !session) {
+          toast.error("請先登入會員才能按讚喔！");
+          return;
+      }
+
+      if (!session.access_token) {
+          toast.error("登入已過期，請重新登入");
+          return;
+      }
+
+      try {
+          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/like`, {
+              method: 'POST',
+              headers: { 
+                  'Authorization': `Bearer ${publicAnonKey}`,
+                  'X-Access-Token': session.access_token,
+                  'Content-Type': 'application/json'
+              }
+          });
+          
+          if (response.ok) {
+              const data = await response.json();
+              setLikeCounts(prev => ({ ...prev, [id]: data.count }));
+              if (data.liked) {
+                  setUserLikes(prev => [...prev, id.toString()]);
+              } else {
+                  setUserLikes(prev => prev.filter(lid => lid !== id.toString()));
+              }
+          } else {
+              toast.error("操作失敗，請稍後再試");
+          }
+      } catch (e) {
+          console.error(e);
+          toast.error("連線錯誤");
+      }
+  };
+
+  const handleToggleCollection = async (id: number) => {
+      if (!user || !session) {
+          toast.error("請先登入會員才能收藏喔！");
+          return;
+      }
+
+      if (!session.access_token) {
+          toast.error("登入已過期，請重新登入");
+          return;
+      }
+
+      try {
+          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/collect`, {
+              method: 'POST',
+              headers: { 
+                  'Authorization': `Bearer ${publicAnonKey}`,
+                  'X-Access-Token': session.access_token,
+                  'Content-Type': 'application/json'
+              }
+          });
+          
+          if (response.ok) {
+              const data = await response.json();
+              setCollectionCounts(prev => ({ ...prev, [id]: data.count }));
+              if (data.collected) {
+                  setUserCollections(prev => [...prev, id.toString()]);
+                  toast.success("已加入收藏！");
+              } else {
+                  setUserCollections(prev => prev.filter(cid => cid !== id.toString()));
+                  toast.info("已取消收藏");
+              }
+          } else {
+              toast.error("操作失敗，請稍後再試");
+          }
+      } catch (e) {
+          console.error(e);
+          toast.error("連線錯誤");
+      }
+  };
 
   const selectedArticle = ARTICLES.find(a => a.id === selectedArticleId);
+
+  // Featured and Recent Articles
+  const featuredArticle = ARTICLES[0];
+  const recentArticles = ARTICLES.slice(1);
 
   if (selectedArticleId && selectedArticle) {
     return (
       <ArticleDetail 
         article={selectedArticle} 
+        readCount={readCounts[selectedArticleId] || 0}
+        likeCount={likeCounts[selectedArticleId] || 0}
+        collectionCount={collectionCounts[selectedArticleId] || 0}
+        isLiked={userLikes.includes(selectedArticleId.toString())}
+        isCollected={userCollections.includes(selectedArticleId.toString())}
+        onToggleLike={() => handleToggleLike(selectedArticleId)}
+        onToggleCollection={() => handleToggleCollection(selectedArticleId)}
         onBack={() => setSelectedArticleId(null)} 
       />
     );
@@ -64,8 +229,102 @@ export function ParentingSection() {
         </p>
       </div>
 
+      {/* Top Section: Author Bio + Featured Article */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+        {/* Author Bio (Left) */}
+        <div className="lg:col-span-4 xl:col-span-4 h-full">
+          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-stone-100 h-full flex flex-col items-center text-center">
+             <div className="w-48 h-48 relative overflow-hidden rounded-full shadow-inner mb-6">
+              <ImageWithFallback 
+                src={authorAvatar} 
+                alt="森森邏輯工程師媽媽" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            
+            <h3 className="text-xl font-bold text-emerald-900 leading-snug mb-2">
+               森森邏輯<br/>工程師媽媽 Mega
+            </h3>
+            <p className="text-xs text-stone-400 font-medium mb-6 uppercase tracking-wider">
+              Engineer Mom
+            </p>
+
+            <div className="space-y-4 text-stone-600 leading-relaxed text-sm text-justify">
+              <p>
+                在程式碼與童言童語間來回切換。我不斷思考，如何在育兒路上為孩子建立足夠的安全感與明確的界線。
+              </p>
+              <p>
+                平日熱愛在職場上挑戰與學習；下班後投入陪伴孩子。週末則一家三口盡情投入大自然。
+              </p>
+              <div className="bg-orange-50/50 p-4 rounded-xl text-stone-600 text-xs italic">
+                <p>
+                  文章皆由我與 AI 共同激盪，再依實戰經驗調整。不談大道理，只分享育兒生活中的點滴酸甜。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Featured Article (Right) */}
+        <div className="lg:col-span-8 xl:col-span-8 h-full">
+            <Card 
+              className="h-full cursor-pointer hover:shadow-xl transition-all duration-300 group border-stone-100 overflow-hidden bg-white relative flex flex-col md:flex-row"
+              onClick={() => handleArticleClick(featuredArticle.id)}
+            >
+              <div className="md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+                <ImageWithFallback 
+                  src={featuredArticle.image}
+                  alt={featuredArticle.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 absolute inset-0"
+                />
+                <div className="absolute top-4 left-4 z-10">
+                    <Badge className="bg-white/90 text-stone-700 hover:bg-white backdrop-blur-sm shadow-sm text-sm py-1 px-3">
+                        {featuredArticle.category}
+                    </Badge>
+                </div>
+              </div>
+              
+              <CardContent className="md:w-1/2 p-6 md:p-10 flex flex-col justify-center space-y-6 bg-gradient-to-br from-white to-emerald-50/30">
+                 <div className="space-y-2">
+                    <div className="flex items-center text-xs text-stone-400 space-x-3 mb-2">
+                        <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Calendar className="w-3 h-3 mr-1" /> {featuredArticle.date}</span>
+                        <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Clock className="w-3 h-3 mr-1" /> {featuredArticle.readTime}</span>
+                        <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Eye className="w-3 h-3 mr-1" /> {readCounts[featuredArticle.id]?.toLocaleString() || 0}</span>
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-stone-800 leading-tight group-hover:text-emerald-700 transition-colors">
+                      {featuredArticle.title}
+                    </h3>
+                 </div>
+                 
+                 <p className="text-stone-500 text-base leading-relaxed">
+                    {featuredArticle.summary}
+                 </p>
+                 
+                 <div className="flex items-center justify-between pt-6 border-t border-stone-100">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="w-8 h-8 border-2 border-white shadow-sm">
+                            <AvatarImage src={featuredArticle.authorImage || `https://api.dicebear.com/7.x/micah/svg?seed=${featuredArticle.author}`} />
+                            <AvatarFallback>{featuredArticle.author[0]}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium text-stone-600">{featuredArticle.author}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center text-stone-400 text-xs">
+                            <Heart className={userLikes.includes(featuredArticle.id.toString()) ? "w-4 h-4 mr-1 text-pink-500 fill-pink-500" : "w-4 h-4 mr-1"} />
+                            {likeCounts[featuredArticle.id] || 0}
+                        </div>
+                        <Button variant="ghost" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 p-0 h-auto font-medium group-hover:translate-x-1 transition-transform">
+                             閱讀更多 <ArrowLeft className="w-4 h-4 ml-1 rotate-180" />
+                        </Button>
+                    </div>
+                 </div>
+              </CardContent>
+            </Card>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {ARTICLES.map((article, index) => (
+        {recentArticles.map((article, index) => (
           <motion.div
             key={article.id}
             initial={{ opacity: 0, y: 20 }}
@@ -74,7 +333,7 @@ export function ParentingSection() {
           >
             <Card 
               className="h-full cursor-pointer hover:shadow-xl transition-all duration-300 group border-stone-100 overflow-hidden bg-white"
-              onClick={() => setSelectedArticleId(article.id)}
+              onClick={() => handleArticleClick(article.id)}
             >
               <div className="aspect-video relative overflow-hidden">
                 <ImageWithFallback 
@@ -92,6 +351,7 @@ export function ParentingSection() {
                 <div className="flex items-center text-xs text-stone-400 space-x-4">
                     <span className="flex items-center"><Calendar className="w-3 h-3 mr-1" /> {article.date}</span>
                     <span className="flex items-center"><Clock className="w-3 h-3 mr-1" /> {article.readTime}</span>
+                    <span className="flex items-center"><Eye className="w-3 h-3 mr-1" /> {readCounts[article.id]?.toLocaleString() || 0}</span>
                 </div>
                 <h3 className="text-xl font-bold text-stone-800 leading-snug group-hover:text-emerald-700 transition-colors">
                   {article.title}
@@ -102,12 +362,18 @@ export function ParentingSection() {
                 <div className="flex items-center justify-between pt-4 border-t border-stone-50">
                     <div className="flex items-center gap-2">
                         <Avatar className="w-6 h-6">
-                            <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${article.author}`} />
+                            <AvatarImage src={article.authorImage || `https://api.dicebear.com/7.x/micah/svg?seed=${article.author}`} />
                             <AvatarFallback>{article.author[0]}</AvatarFallback>
                         </Avatar>
                         <span className="text-xs font-medium text-stone-600">{article.author}</span>
                     </div>
-                    <span className="text-xs text-emerald-600 font-medium">閱讀更多</span>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center text-stone-400 text-xs">
+                            <Heart className={userLikes.includes(article.id.toString()) ? "w-3 h-3 mr-1 text-pink-500 fill-pink-500" : "w-3 h-3 mr-1"} />
+                            {likeCounts[article.id] || 0}
+                        </div>
+                        <span className="text-xs text-emerald-600 font-medium">閱讀更多</span>
+                    </div>
                 </div>
               </CardContent>
             </Card>
@@ -115,108 +381,5 @@ export function ParentingSection() {
         ))}
       </div>
     </div>
-  );
-}
-
-function ArticleDetail({ article, onBack }: { article: typeof ARTICLES[0], onBack: () => void }) {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="max-w-3xl mx-auto py-8"
-    >
-      <Button variant="ghost" onClick={onBack} className="mb-6 pl-0 hover:bg-transparent hover:text-emerald-600 text-stone-500">
-        <ArrowLeft className="w-4 h-4 mr-2" /> 回到列表
-      </Button>
-
-      <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-stone-100">
-        {/* Header */}
-        <header className="space-y-6 mb-12">
-            <div className="flex gap-2 mb-4">
-                 <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100">
-                    {article.category}
-                  </Badge>
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-stone-800 leading-tight">
-                {article.title}
-            </h1>
-            <div className="flex items-center justify-between text-stone-500 text-sm border-b border-stone-100 pb-8">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="w-8 h-8">
-                            <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${article.author}`} />
-                            <AvatarFallback>{article.author[0]}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium text-stone-700">{article.author}</span>
-                    </div>
-                    <span>{article.date}</span>
-                    <span>{article.readTime}</span>
-                </div>
-                <div className="flex gap-4">
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-pink-50 hover:text-pink-500">
-                        <Heart className="w-5 h-5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-emerald-50 hover:text-emerald-500">
-                        <Share2 className="w-5 h-5" />
-                    </Button>
-                </div>
-            </div>
-        </header>
-
-        {/* Content */}
-        <article className="prose prose-stone prose-lg max-w-none mb-12">
-            <p className="lead text-xl text-stone-600 italic border-l-4 border-emerald-200 pl-4 py-2 bg-emerald-50/50 rounded-r-lg mb-8">
-                「{article.summary}」
-            </p>
-            
-            <p>
-                那天，孩子在客廳裡大哭大鬧，玩具散落一地。我原本想大聲喝斥：「為什麼又不收玩具！」，但話到嘴邊，我深呼吸了一口氣。我看著他脹紅的小臉，突然意識到，他不是不想收，他是累了，或者是挫折了。
-            </p>
-            <p>
-                我們常常以大人的邏輯去判斷孩子的行為：「玩完就要收」這是效率，是規矩。但在孩子的世界裡，那個剛蓋好的城堡是他心血的結晶，拆掉它等於否定了他的努力。
-            </p>
-            
-            <h3 className="text-xl font-bold text-stone-800 mt-8 mb-4">試著蹲下來</h3>
-            <p>
-                當我蹲下來，視線與他平行時，整個世界變得不一樣了。那些巨大的家具、高聳的大人，真的會讓人感到壓迫。我輕輕抱住他，說：「我知道你不想拆掉城堡，因為它很漂亮，對不對？」
-            </p>
-            <p>
-                神奇的是，哭聲漸漸小了。他點點頭，眼淚還掛在睫毛上。
-            </p>
-
-            <h3 className="text-xl font-bold text-stone-800 mt-8 mb-4">邏輯是冰冷的，愛是溫暖的</h3>
-            <p>
-                森森邏輯的核心，不只是訓練孩子的思考邏輯，更是要訓練父母「理解」的邏輯。當我們理解了行為背後的原因，教養就不再是角力，而是引導。
-            </p>
-        </article>
-
-        {/* Author's Note */}
-        <div className="bg-orange-50 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start">
-            <div className="shrink-0">
-                 <Avatar className="w-16 h-16 border-4 border-white shadow-sm">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${article.author}`} />
-                    <AvatarFallback>{article.author[0]}</AvatarFallback>
-                </Avatar>
-            </div>
-            <div className="space-y-2">
-                <h4 className="font-bold text-stone-800 flex items-center gap-2">
-                    作者心情小語 <MessageCircle className="w-4 h-4 text-orange-400" />
-                </h4>
-                <p className="text-stone-600 leading-relaxed italic">
-                    寫這篇的時候，其實我自己昨天才剛吼完小孩（笑）。育兒就是這樣，我們都在跌跌撞撞中學習。你不孤單，我們一起慢慢來。
-                </p>
-            </div>
-        </div>
-
-        {/* CTA */}
-        <div className="mt-12 text-center p-8 border-t border-dashed border-stone-200">
-            <p className="text-stone-500 mb-6">喜歡這篇文章嗎？也許你的朋友也需要一點溫柔的安慰。</p>
-            <Button className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 text-lg shadow-lg shadow-emerald-200/50 transition-all hover:scale-105">
-                分享給也在育兒森林迷路的朋友
-            </Button>
-        </div>
-      </div>
-    </motion.div>
   );
 }
