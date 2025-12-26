@@ -7,7 +7,10 @@ import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { Dialog, DialogContent } from '../ui/dialog';
 import { useGameTime } from '../../context/GameTimeContext';
-import animalsSprite from 'figma:asset/ddad2db55c042ae5dcdcdd8db2cb4ffc2b86c3e9.png';
+
+// Standard Web Asset Import
+// Note: Please ensure 'animals-sprite.png' is placed in 'public/assets/'
+const animalsSprite = "/assets/animals-sprite.png";
 
 // Game Types
 interface Game {

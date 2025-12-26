@@ -17,7 +17,7 @@ const TECH_ARTICLES = [
   {
     id: 2,
     title: "為什麼我選擇 Tailwind：因為工程師也需要美感捷徑",
-    summary: "以前寫 CSS 像是在畫油畫，現在寫 Tailwind 像是在玩樂高。對於沒有設計背景的爸爸來說，樂高顯然比較友善。",
+    summary: "以前寫 CSS 像是在畫油畫，現在寫 Tailwind 像是在玩樂高。對於沒有設計背景的媽媽來說，樂高顯然比較友善。",
     date: "2024.12.18",
     tags: ["CSS", "Tailwind", "DX"],
     readTime: "4 min"
@@ -42,7 +42,7 @@ export function TechSection() {
                 技術心得
             </h2>
             <p className="text-stone-500 mt-2">
-                工程師爸爸的實務筆記。用最清楚的邏輯，分享技術路上的風景。
+                工程師媽媽的實務筆記。用最清楚的邏輯，分享技術路上的風景。
             </p>
         </div>
         <div className="hidden md:block">
