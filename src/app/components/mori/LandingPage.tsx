@@ -13,10 +13,12 @@ import {
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
-import heroBackground from "figma:asset/a41565d229b93ac7f93d417944180fbbb5e805e0.png";
-import parentingImage from "figma:asset/b803e547aecb3c070801f0296790f71bfd2e84e6.png";
-import parentingGamesImage from "figma:asset/3a8f0f48e24c2cab1407dbd993d75ebd041c2123.png";
-import technicalImage from "figma:asset/a2e2ff1fcf8ffa0e08683bfc79e7372882b549b3.png";
+
+// Standard Web Asset Imports
+const heroBackground = "/assets/landing-hero.png";
+const parentingImage = "/assets/landing-parenting.png";
+const parentingGamesImage = "/assets/landing-games.png";
+const technicalImage = "/assets/landing-tech.png";
 
 interface LandingPageProps {
   setView: (view: string) => void;

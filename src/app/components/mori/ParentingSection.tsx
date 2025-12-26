@@ -7,8 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
-import authorAvatar from 'figma:asset/8914be7595adbe188e1cc48085e2f7a02a480323.png';
-import articleImage from 'figma:asset/dba979c5a486a9cc2a9a2ace1d227a67ee1c9034.png';
+
+// Standard Web Asset Imports
+const authorAvatar = "/assets/author-avatar.png";
+const articleImage = "/assets/article-image-default.png";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
