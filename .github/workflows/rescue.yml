@@ -27,7 +27,7 @@ jobs:
 
                     # 2. 長回資料夾並精準拿回 deploy.yml
           mkdir -p .github/workflows
-          git checkout automation -- .github/workflows/deploy.yml 
+          git checkout auto -- .github/workflows/deploy.yml 
           
           
           # 自動修正 vite.config.ts (加入 base)
