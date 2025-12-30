@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import { AuthProvider } from './context/AuthContext';
-import { GameTimeProvider } from './context/GameTimeContext';
-import { Layout } from './components/mori/Layout';
-import { LandingPage } from './components/mori/LandingPage';
-import { ParentingSection } from './components/mori/ParentingSection';
-import { GameSection } from './components/mori/GameSection';
-import { TechSection } from './components/mori/TechSection';
-import { MemberSection } from './components/mori/MemberSection';
+import React, { useState } from "react";
+import { AuthProvider } from "./context/AuthContext";
+import { GameTimeProvider } from "./context/GameTimeContext";
+import { Layout } from "./components/mori/Layout";
+import { LandingPage } from "./components/mori/LandingPage";
+import { ParentingSection } from "./components/mori/ParentingSection";
+import { GameSection } from "./components/mori/GameSection";
+import { TechSection } from "./components/mori/TechSection";
+import { MemberSection } from "./components/mori/MemberSection";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('landing');
+  const [currentView, setCurrentView] = useState("landing");
 
   const renderView = () => {
     switch (currentView) {
-      case 'landing':
+      case "landing":
         return <LandingPage setView={setCurrentView} />;
-      case 'parenting':
+      case "parenting":
         return <ParentingSection />;
-      case 'games':
+      case "games":
         return <GameSection />;
-      case 'tech':
+      case "tech":
         return <TechSection />;
-      case 'member':
+      case "member":
         return <MemberSection />;
       default:
         return <LandingPage setView={setCurrentView} />;
@@ -31,7 +31,10 @@ export default function App() {
   return (
     <AuthProvider>
       <GameTimeProvider>
-        <Layout currentView={currentView} setView={setCurrentView}>
+        <Layout
+          currentView={currentView}
+          setView={setCurrentView}
+        >
           {renderView()}
         </Layout>
       </GameTimeProvider>
