@@ -1,0 +1,14 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#eff6ff"/>
+  
+  <!-- Cup -->
+  <g transform="translate(150, 150) rotate(45)">
+    <path d="M0 0 L20 80 H60 L80 0 Z" fill="#3b82f6"/>
+    <path d="M60 20 H80 V60 H60" fill="#3b82f6"/>
+  </g>
+  
+  <!-- Spilled Liquid -->
+  <path d="M220 220 Q250 200 280 220 T320 230 V250 H200 V230 Q210 230 220 220" fill="#93c5fd"/>
+  <circle cx="300" cy="240" r="5" fill="#93c5fd"/>
+  <circle cx="210" cy="245" r="3" fill="#93c5fd"/>
+</svg>

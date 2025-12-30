@@ -1,11 +1,9 @@
 import React from 'react';
 import { Sparkles, Check, Star, Wind, Shield, HeartHandshake, Heart, MessageCircle, Gamepad2, Sun, Flower2, Moon } from 'lucide-react';
-
-// Standard Web Asset Imports
-const authorAvatar = "/assets/author-avatar.png";
-const articleImage = "/assets/article-image-default.png";
-const letterImage = "/assets/article-letter.png";
-const notOnPurposeImage = "/assets/article-not-on-purpose.png";
+const authorAvatar = `${import.meta.env.BASE_URL}assets/author-avatar.png`;
+const articleImage = `${import.meta.env.BASE_URL}assets/article-image-default.png`;
+const letterImage = `${import.meta.env.BASE_URL}assets/article-letter.png`;
+const notOnPurposeImage = `${import.meta.env.BASE_URL}assets/article-not-on-purpose.png`;
 
 export const ARTICLES = [
   {
@@ -255,7 +253,7 @@ export const ARTICLES = [
             ))}
           </ul>
           <p className="mt-4 text-stone-700 font-medium">
-            他不是叛逆，他只是第一次面對自己的「我想要」與「不行」。���混亂，不是壞。他需要媽媽，但又想逃離媽媽。這就是三歲。
+            他不是叛逆，他只是第一次面對自己的「我想要」與「不行」。他混亂，不是壞。他需要媽媽，但又想逃離媽媽。這就是三歲。
           </p>
         </div>
 

@@ -1,0 +1,14 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fff7ed"/>
+  
+  <!-- Envelope -->
+  <g transform="translate(100, 80)">
+    <rect width="200" height="140" fill="#fcd34d"/>
+    <path d="M0 0 L100 70 L200 0" fill="#fbbf24"/>
+    <path d="M0 140 L100 70 L200 140" fill="#f59e0b"/>
+  </g>
+  
+  <!-- Stamp -->
+  <rect x="250" y="90" width="40" height="50" fill="#ef4444"/>
+  <circle cx="270" cy="115" r="15" fill="#fff" opacity="0.3"/>
+</svg>

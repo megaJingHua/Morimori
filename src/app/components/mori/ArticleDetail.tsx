@@ -1,163 +1,149 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Eye, Heart, Share2, Facebook, Link, Instagram, Bookmark } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Heart, Share2, Eye, Bookmark, Printer } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { toast } from "sonner";
-import { ARTICLES } from '../../data/articles';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { toast } from 'sonner';
 
-export interface ArticleDetailProps {
-    article: typeof ARTICLES[0];
-    readCount: number;
-    likeCount: number;
-    collectionCount: number;
-    isLiked: boolean;
-    isCollected: boolean;
-    onToggleLike: () => void;
-    onToggleCollection: () => void;
-    onBack: () => void;
+interface Article {
+  id: number;
+  title: string;
+  summary: string;
+  author: string;
+  authorImage?: string;
+  date: string;
+  readTime: string;
+  category: string;
+  image: string;
+  content: React.ReactNode;
 }
 
-export function ArticleDetail({ article, readCount, likeCount, collectionCount, isLiked, isCollected, onToggleLike, onToggleCollection, onBack }: ArticleDetailProps) {
-  const copyToClipboard = (text: string) => {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(() => {
-              toast.success("連結已複製到剪貼簿！");
-          }).catch((err) => {
-              fallbackCopyTextToClipboard(text);
-          });
-      } else {
-          fallbackCopyTextToClipboard(text);
-      }
-  };
+interface ArticleDetailProps {
+  article: Article;
+  readCount: number;
+  likeCount: number;
+  collectionCount: number;
+  isLiked: boolean;
+  isCollected: boolean;
+  onToggleLike: () => void;
+  onToggleCollection: () => void;
+  onBack: () => void;
+}
 
-  const fallbackCopyTextToClipboard = (text: string) => {
-      try {
-          const textArea = document.createElement("textarea");
-          textArea.value = text;
-          textArea.style.position = "fixed";
-          textArea.style.left = "-9999px";
-          textArea.style.top = "0";
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          const successful = document.execCommand('copy');
-          document.body.removeChild(textArea);
-          if (successful) {
-              toast.success("連結已複製到剪貼簿！");
-          } else {
-              toast.info(`請手動複製網址：${text}`);
-          }
-      } catch (err) {
-          toast.info(`請手動複製網址：${text}`);
-      }
-  };
-
-  const handleShare = (platform: 'facebook' | 'instagram' | 'copy') => {
-      const url = window.location.href; 
-      if (platform === 'facebook') {
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-      } else if (platform === 'copy' || platform === 'instagram') {
-          copyToClipboard(url);
-          if (platform === 'instagram') {
-              setTimeout(() => toast.info("請開啟 Instagram 貼文或限時動態貼上連結"), 500);
-          }
-      }
+export function ArticleDetail({ 
+    article, 
+    readCount, 
+    likeCount, 
+    collectionCount,
+    isLiked, 
+    isCollected,
+    onToggleLike, 
+    onToggleCollection, 
+    onBack 
+}: ArticleDetailProps) {
+    
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('連結已複製到剪貼簿');
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="max-w-3xl mx-auto py-8"
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="max-w-3xl mx-auto py-8 bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden"
     >
-      <Button variant="ghost" onClick={onBack} className="mb-6 pl-0 hover:bg-transparent hover:text-emerald-600 text-stone-500">
-        <ArrowLeft className="w-4 h-4 mr-2" /> 回到列表
-      </Button>
+        {/* Header Image */}
+        <div className="relative h-64 md:h-80 w-full">
+            <ImageWithFallback src={article.image} alt={article.title} className="w-full h-full object-cover" />
+            <div className="absolute top-4 left-4">
+                <Button 
+                    variant="secondary" 
+                    onClick={onBack} 
+                    className="bg-white/90 backdrop-blur-sm text-stone-600 hover:bg-white shadow-sm rounded-full"
+                >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    返回列表
+                </Button>
+            </div>
+        </div>
 
-      <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-stone-100 mb-8">
-        {/* Header */}
-        <header className="space-y-6 mb-12">
-            <div className="flex gap-2 mb-4">
-                 <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100">
+        <div className="p-8 md:p-12 space-y-8">
+            {/* Meta Info */}
+            <div className="space-y-4 text-center">
+                <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-200 px-3 py-1 text-sm">
                     {article.category}
-                  </Badge>
+                </Badge>
+                <h1 className="text-3xl md:text-4xl font-bold text-stone-900 leading-tight">
+                    {article.title}
+                </h1>
+                
+                <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-stone-500">
+                    <span className="flex items-center"><Calendar className="w-4 h-4 mr-1" /> {article.date}</span>
+                    <span className="hidden md:inline">•</span>
+                    <span className="flex items-center"><Clock className="w-4 h-4 mr-1" /> {article.readTime}</span>
+                    <span className="hidden md:inline">•</span>
+                    <span className="flex items-center"><Eye className="w-4 h-4 mr-1" /> {readCount} 次閱讀</span>
+                </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-stone-800 leading-tight">
-                {article.title}
-            </h1>
-            <div className="flex items-center justify-between text-stone-500 text-sm border-b border-stone-100 pb-8 flex-wrap gap-4">
-                <div className="flex items-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="w-8 h-8">
-                            <AvatarImage src={article.authorImage || `https://api.dicebear.com/7.x/micah/svg?seed=${article.author}`} />
-                            <AvatarFallback>{article.author[0]}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium text-stone-700">{article.author}</span>
+
+            {/* Author */}
+            <div className="flex items-center justify-center gap-3 py-6 border-y border-stone-100">
+                <Avatar className="w-12 h-12 border-2 border-white shadow-sm">
+                    <AvatarImage src={article.authorImage || `https://api.dicebear.com/7.x/micah/svg?seed=${article.author}`} />
+                    <AvatarFallback>{article.author[0]}</AvatarFallback>
+                </Avatar>
+                <div className="text-left">
+                    <p className="font-bold text-stone-800">{article.author}</p>
+                    <p className="text-xs text-stone-400">工程師媽媽 / 育兒觀察者</p>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="prose prose-stone prose-lg max-w-none leading-loose">
+                {article.content}
+            </div>
+
+            {/* Actions */}
+            <div className="pt-12 border-t border-stone-100">
+                <div className="flex flex-col items-center gap-6">
+                    <p className="text-stone-400 text-sm">喜歡這篇文章嗎？給個鼓勵吧！</p>
+                    <div className="flex items-center gap-4">
+                        <Button 
+                            variant="outline" 
+                            size="lg" 
+                            className={`rounded-full h-12 px-6 gap-2 transition-all ${isLiked ? 'bg-pink-50 border-pink-200 text-pink-600' : 'hover:bg-pink-50 hover:text-pink-600'}`}
+                            onClick={onToggleLike}
+                        >
+                            <Heart className={`w-5 h-5 ${isLiked ? 'fill-pink-600' : ''}`} />
+                            <span>{likeCount}</span>
+                        </Button>
+
+                        <Button 
+                            variant="outline" 
+                            size="lg" 
+                            className={`rounded-full h-12 px-6 gap-2 transition-all ${isCollected ? 'bg-amber-50 border-amber-200 text-amber-600' : 'hover:bg-amber-50 hover:text-amber-600'}`}
+                            onClick={onToggleCollection}
+                        >
+                            <Bookmark className={`w-5 h-5 ${isCollected ? 'fill-amber-600' : ''}`} />
+                            <span>收藏</span>
+                        </Button>
+
+                        <Button 
+                            variant="outline" 
+                            size="lg" 
+                            className="rounded-full h-12 w-12 p-0 border-stone-200 text-stone-500 hover:bg-stone-50 hover:text-stone-800"
+                            onClick={handleShare}
+                        >
+                            <Share2 className="w-5 h-5" />
+                        </Button>
                     </div>
-                    <span>{article.date}</span>
-                    <span>{article.readTime}</span>
-                    <span className="flex items-center gap-1"><Eye className="w-4 h-4" /> {readCount.toLocaleString()} 人閱讀</span>
-                </div>
-                <div className="flex gap-2">
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={onToggleLike}
-                        className={`rounded-full hover:bg-pink-50 transition-colors ${isLiked ? 'text-pink-500' : 'text-stone-400 hover:text-pink-500'}`}
-                        title="按讚"
-                    >
-                        <Heart className={`w-5 h-5 ${isLiked ? 'fill-pink-500' : ''}`} />
-                        {likeCount > 0 && <span className="ml-1 text-xs font-medium">{likeCount}</span>}
-                    </Button>
-
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={onToggleCollection}
-                        className={`rounded-full hover:bg-amber-50 transition-colors ${isCollected ? 'text-amber-500' : 'text-stone-400 hover:text-amber-500'}`}
-                        title="收藏文章"
-                    >
-                        <Bookmark className={`w-5 h-5 ${isCollected ? 'fill-amber-500' : ''}`} />
-                    </Button>
                 </div>
             </div>
-        </header>
-
-        <article className="prose prose-stone max-w-none prose-p:text-stone-600 prose-headings:text-stone-800 prose-img:rounded-xl">
-           {article.content}
-        </article>
-      </div>
-
-      <div className="text-center">
-          <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                  <Button size="lg" className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 px-8">
-                      <Share2 className="w-4 h-4 mr-2" />
-                      分享給也在育兒森林迷路的朋友
-                  </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-56">
-                  <DropdownMenuItem onClick={() => handleShare('facebook')}>
-                      <Facebook className="w-4 h-4 mr-2 text-blue-600" /> 分享至 Facebook
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('instagram')}>
-                      <Instagram className="w-4 h-4 mr-2 text-pink-600" /> 分享至 Instagram
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('copy')}>
-                      <Link className="w-4 h-4 mr-2 text-stone-600" /> 複製連結
-                  </DropdownMenuItem>
-              </DropdownMenuContent>
-          </DropdownMenu>
-      </div>
+        </div>
     </motion.div>
   );
 }

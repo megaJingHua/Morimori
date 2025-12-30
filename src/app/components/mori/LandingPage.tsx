@@ -13,12 +13,11 @@ import {
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
-
 // Standard Web Asset Imports
-const heroBackground = "/assets/landing-hero.png";
-const parentingImage = "/assets/landing-parenting.png";
-const parentingGamesImage = "/assets/landing-games.png";
-const technicalImage = "/assets/landing-tech.png";
+const heroBackground = `${import.meta.env.BASE_URL}assets/landing-hero.png`;
+const parentingImage = `${import.meta.env.BASE_URL}assets/landing-parenting.png`;
+const parentingGamesImage = `${import.meta.env.BASE_URL}assets/landing-games.png`;
+const technicalImage = `${import.meta.env.BASE_URL}assets/landing-tech.png`;
 
 interface LandingPageProps {
   setView: (view: string) => void;

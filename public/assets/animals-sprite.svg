@@ -1,0 +1,47 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top Left: Deer (Orange/Brown) -->
+  <g transform="translate(0, 0)">
+    <rect width="100" height="100" fill="#fef3c7"/>
+    <circle cx="50" cy="50" r="30" fill="#d97706"/>
+    <!-- Antlers -->
+    <path d="M40 30 L30 10 M60 30 L70 10" stroke="#92400e" stroke-width="3"/>
+    <circle cx="40" cy="50" r="3" fill="#000"/>
+    <circle cx="60" cy="50" r="3" fill="#000"/>
+    <circle cx="50" cy="60" r="4" fill="#78350f"/>
+  </g>
+
+  <!-- Top Right: Rabbit (Pink/White) -->
+  <g transform="translate(100, 0)">
+    <rect width="100" height="100" fill="#fce7f3"/>
+    <circle cx="50" cy="60" r="25" fill="#fff"/>
+    <!-- Ears -->
+    <ellipse cx="40" cy="30" rx="8" ry="20" fill="#fff"/>
+    <ellipse cx="60" cy="30" rx="8" ry="20" fill="#fff"/>
+    <circle cx="42" cy="55" r="3" fill="#000"/>
+    <circle cx="58" cy="55" r="3" fill="#000"/>
+    <circle cx="50" cy="65" r="3" fill="#f472b6"/>
+  </g>
+
+  <!-- Bottom Left: Lion (Yellow) -->
+  <g transform="translate(0, 100)">
+    <rect width="100" height="100" fill="#fff7ed"/>
+    <!-- Mane -->
+    <circle cx="50" cy="50" r="35" fill="#f59e0b"/>
+    <circle cx="50" cy="50" r="25" fill="#fbbf24"/>
+    <circle cx="40" cy="45" r="3" fill="#000"/>
+    <circle cx="60" cy="45" r="3" fill="#000"/>
+    <path d="M45 60 Q50 65 55 60" stroke="#000" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- Bottom Right: Bear (Brown) -->
+  <g transform="translate(100, 100)">
+    <rect width="100" height="100" fill="#f0fdf4"/>
+    <circle cx="50" cy="50" r="30" fill="#78350f"/>
+    <!-- Ears -->
+    <circle cx="25" cy="25" r="10" fill="#78350f"/>
+    <circle cx="75" cy="25" r="10" fill="#78350f"/>
+    <circle cx="40" cy="45" r="3" fill="#fff"/>
+    <circle cx="60" cy="45" r="3" fill="#fff"/>
+    <circle cx="50" cy="55" r="8" fill="#451a03"/>
+  </g>
+</svg>
