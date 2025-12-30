@@ -1,4 +1,4 @@
-name: Deploy React-Vite to GitHub Pages 
+name: Deploy React-Vite to GitHub Pages
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist   # ✅ Vite 正確輸出資料夾
+          path: ./build   # ← 這裡改成 build！
           
   deploy:
     runs-on: ubuntu-latest
