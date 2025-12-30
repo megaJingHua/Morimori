@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, User, BookOpen, Gamepad2, Code, Menu, X } from 'lucide-react';
+import { Home, User, BookOpen, Gamepad2, Code, Menu, X, Briefcase, LogOut, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -29,6 +29,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
     { id: 'landing', label: '首頁', icon: Home },
     { id: 'parenting', label: '親子文章', icon: BookOpen },
     { id: 'games', label: '遊戲區', icon: Gamepad2 },
+    { id: 'toolkit', label: '工具包', icon: Briefcase },
     { id: 'tech', label: '技術筆記', icon: Code },
   ];
 
@@ -85,33 +86,30 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
              {user ? (
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                             <Avatar className="h-9 w-9 border-2 border-white shadow-sm bg-white">
+                        <Button variant="ghost" className="relative h-11 w-11 rounded-full p-0 hover:bg-transparent">
+                             <Avatar className="h-10 w-10 border-2 border-white shadow-md bg-white transition-transform hover:scale-105">
                                 {zodiac ? (
-                                    <div className="w-full h-full flex items-center justify-center bg-yellow-50 text-xl">
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-50 to-amber-100 text-2xl">
                                         {zodiac.emoji}
                                     </div>
                                 ) : (
-                                    <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${user.id}`} alt={user.email || ''} />
+                                    <>
+                                        <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${user.id}`} alt={user.email || ''} />
+                                        <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                                    </>
                                 )}
-                                <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
                              </Avatar>
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end" forceMount>
-                        <DropdownMenuLabel className="font-normal">
-                            <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{user.user_metadata?.name || '家長'}</p>
-                                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                            </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleNavClick('member')}>
-                            <User className="mr-2 h-4 w-4" />
-                            <span>會員中心</span>
+                    <DropdownMenuContent className="w-56 p-2 rounded-2xl shadow-xl border-stone-100/50 bg-white/95 backdrop-blur-sm" align="end" forceMount>
+                        <DropdownMenuItem onClick={() => handleNavClick('member')} className="rounded-lg p-2.5 cursor-pointer focus:bg-emerald-50 focus:text-emerald-700 text-stone-600">
+                            <User className="mr-3 h-4 w-4" />
+                            <span className="font-medium">會員中心</span>
                         </DropdownMenuItem>
-                         <DropdownMenuItem onClick={() => signOut()}>
-                            <span>登出</span>
+                        <DropdownMenuSeparator className="bg-stone-100 my-1" />
+                         <DropdownMenuItem onClick={() => signOut()} className="rounded-lg p-2.5 cursor-pointer text-red-500 focus:bg-red-50 focus:text-red-600">
+                            <LogOut className="mr-3 h-4 w-4" />
+                            <span className="font-medium">登出</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                  </DropdownMenu>

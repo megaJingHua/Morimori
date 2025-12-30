@@ -7,6 +7,7 @@ import { ParentingSection } from './components/mori/ParentingSection';
 import { GameSection } from './components/mori/GameSection';
 import { TechSection } from './components/mori/TechSection';
 import { MemberSection } from './components/mori/MemberSection';
+import { ToolkitSection } from './components/mori/ToolkitSection';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
@@ -19,6 +20,8 @@ export default function App() {
         return <ParentingSection />;
       case 'games':
         return <GameSection />;
+      case 'toolkit':
+        return <ToolkitSection setView={setCurrentView} />;
       case 'tech':
         return <TechSection />;
       case 'member':

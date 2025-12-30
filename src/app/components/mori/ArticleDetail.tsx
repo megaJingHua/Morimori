@@ -8,7 +8,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { toast } from 'sonner';
 
 interface Article {
-  id: number;
+  id: number | string;
   title: string;
   summary: string;
   author: string;

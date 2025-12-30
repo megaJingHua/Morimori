@@ -79,7 +79,7 @@ export function LandingPage({ setView }: LandingPageProps) {
             className="w-full h-full object-cover"
           />
           {/* Mobile Overlay for better readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/60 to-white/10 md:bg-white/40 md:bg-none md:backdrop-blur-[2px]" />
+          {/* <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/60 to-white/10 md:bg-white/40 md:bg-none md:backdrop-blur-[2px]" /> */}
         </div>
 
         <div className="relative z-10 max-w-2xl mx-auto space-y-4 md:space-y-6 flex flex-col justify-end md:justify-center h-full md:h-auto pb-10 md:pb-0">

@@ -6,7 +6,6 @@ import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { useGameTime } from '../../context/GameTimeContext';
-const animalsSprite = "/Morimori/assets/animals-sprite.png";
 
 // Game Types
 interface Game {
@@ -128,14 +127,12 @@ export function GameSection() {
   );
 }
 
-// --- Matching Game Component ---
-
-// Top-Left: Deer (0), Top-Right: Rabbit (1), Bottom-Left: Lion (2), Bottom-Right: Bear (3)
-const ANIMAL_INDICES = [0, 1, 2, 3];
+// Animal Emojis for 3x4 grid (6 pairs = 12 cards)
+const ANIMAL_EMOJIS = ["🐶", "🐱", "🐻", "🐼", "🦁", "🐸"];
 
 interface CardItem {
   id: number;
-  animalIndex: number;
+  animalIndex: number; // Index in ANIMAL_EMOJIS
   isFlipped: boolean;
   isMatched: boolean;
 }
@@ -187,8 +184,9 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   }
 
   const shuffleCards = () => {
-    // Select all 4 animals for 8 cards
-    const duplicated = [...ANIMAL_INDICES, ...ANIMAL_INDICES];
+    // 6 animals * 2 = 12 cards
+    const indices = [0, 1, 2, 3, 4, 5];
+    const duplicated = [...indices, ...indices];
     const shuffled = duplicated
       .sort(() => Math.random() - 0.5)
       .map((animalIndex, index) => ({
@@ -282,17 +280,18 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
 
       <div className="bg-emerald-50/50 rounded-3xl p-8 shadow-inner min-h-[500px] flex flex-col justify-center">
          {!isWon ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-2xl mx-auto w-full">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 max-w-2xl mx-auto w-full">
                 {cards.map(card => (
-                <motion.div
+                <div 
                     key={card.id}
-                    initial={{ rotateY: 0 }}
-                    animate={{ rotateY: card.isFlipped ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="aspect-square perspective-1000"
+                    className="aspect-square cursor-pointer [perspective:1000px]"
                     onClick={() => handleCardClick(card.id)}
                 >
-                    <div className="relative w-full h-full text-center transition-transform duration-500 [transform-style:preserve-3d] cursor-pointer">
+                    <motion.div
+                        className="relative w-full h-full text-center transition-all duration-500 [transform-style:preserve-3d]"
+                        animate={{ rotateY: card.isFlipped ? 180 : 0 }}
+                        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
+                    >
                         {/* Front (Hidden) */}
                         <div 
                             className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-sm flex items-center justify-center text-4xl bg-white border-2 border-emerald-100"
@@ -307,29 +306,12 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
                             `}
                             style={{ transform: "rotateY(180deg)" }}
                         >
-                            {/* Sprite Logic: 2x2 grid. 
-                                0: 0% 0% (Deer)
-                                1: 100% 0% (Rabbit)
-                                2: 0% 100% (Lion)
-                                3: 100% 100% (Bear)
-                            */}
-                            <div className="w-full h-full relative overflow-hidden">
-                                <img 
-                                    src={animalsSprite} 
-                                    alt="animal"
-                                    className="absolute max-w-none block"
-                                    style={{
-                                        width: '200%',
-                                        height: '200%',
-                                        top: Math.floor(card.animalIndex / 2) === 1 ? '-100%' : '0%',
-                                        left: (card.animalIndex % 2) === 1 ? '-100%' : '0%',
-                                        objectFit: 'cover'
-                                    }}
-                                />
-                            </div>
+                            <span className="text-6xl select-none" role="img" aria-label="animal">
+                                {ANIMAL_EMOJIS[card.animalIndex]}
+                            </span>
                         </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
+                </div>
                 ))}
             </div>
          ) : (
@@ -357,7 +339,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
         <div>
             <h4 className="font-bold text-stone-800 mb-1">給爸媽的陪玩建議</h4>
             <p className="text-sm text-stone-600">
-                這不只是記憶遊戲。試著問孩子：「獅子在哪裡？」「它是什麼顏色的？」「它怎麼叫？」增加語言互動，比輸贏更重要喔。
+                這不只是記憶遊戲。試著問孩子：「這是什麼動物？」「獅子怎麼叫？」增加語言互動，比輸贏更重要喔。
             </p>
         </div>
       </div>
