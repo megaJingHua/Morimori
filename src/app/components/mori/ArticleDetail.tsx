@@ -93,8 +93,9 @@ export function ArticleDetail({
             {/* Author */}
             <div className="flex items-center justify-center gap-3 py-6 border-y border-stone-100">
                 <Avatar className="w-12 h-12 border-2 border-white shadow-sm">
-                    <AvatarImage src={article.authorImage || `https://api.dicebear.com/7.x/micah/svg?seed=${article.author}`} />
-                    <AvatarFallback>{article.author[0]}</AvatarFallback>
+                    <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-2xl">
+                        👩‍💻
+                    </div>
                 </Avatar>
                 <div className="text-left">
                     <p className="font-bold text-stone-800">{article.author}</p>

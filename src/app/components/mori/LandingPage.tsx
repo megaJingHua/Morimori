@@ -19,8 +19,7 @@ import { ImageWithFallback } from "../figma/ImageWithFallback";
 // Standard Web Asset Imports
 const heroBackground = "/Morimori/assets/landing-hero.png";
 const parentingImage = "/Morimori/assets/landing-parenting.png";
-const parentingGamesImage =
-  "/Morimori/assets/landing-games.png";
+const parentingGamesImage = "/Morimori/assets/landing-games.png";
 const technicalImage = "/Morimori/assets/landing-tech.png";
 
 interface LandingPageProps {
@@ -72,46 +71,49 @@ export function LandingPage({ setView }: LandingPageProps) {
   return (
     <div className="space-y-16 py-8">
       {/* Hero Section */}
-      <section className="relative rounded-3xl overflow-hidden bg-emerald-50 aspect-[16/9] md:aspect-[21/9] flex items-center justify-center text-center p-8 md:p-16">
+      <section className="relative rounded-3xl overflow-hidden bg-emerald-50 aspect-[3/4] md:aspect-[21/9] flex items-center justify-center text-center p-6 md:p-16 shadow-inner">
         <div className="absolute inset-0 z-0">
           <ImageWithFallback
             src={heroBackground}
             alt="Forest Background"
             className="w-full h-full object-cover"
           />
+          {/* Mobile Overlay for better readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/60 to-white/10 md:bg-white/40 md:bg-none md:backdrop-blur-[2px]" />
         </div>
 
-        <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+        <div className="relative z-10 max-w-2xl mx-auto space-y-4 md:space-y-6 flex flex-col justify-end md:justify-center h-full md:h-auto pb-10 md:pb-0">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block px-4 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-emerald-800 text-sm font-medium mb-4 shadow-sm border border-white/50">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-white/80 md:bg-white/60 backdrop-blur-md text-emerald-900 md:text-emerald-800 text-xs md:text-sm font-bold md:font-medium mb-2 md:mb-4 shadow-sm border border-white/50">
               給 3-6 歲孩子家長的溫柔陪伴
             </span>
           </motion.div>
 
-          <motion.h1
-            className="text-4xl md:text-6xl font-bold text-emerald-950 tracking-tight leading-tight"
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
+            className="space-y-2"
           >
-            森森邏輯
-            <br />
-            <span className="text-2xl md:text-3xl font-normal text-emerald-800 mt-2 block">
+            <h1 className="text-5xl md:text-6xl font-bold text-emerald-950 tracking-tight leading-none">
+              森森邏輯
+            </h1>
+            <h2 className="text-lg md:text-3xl font-medium text-emerald-800 md:font-normal mt-2">
               陪你在育兒森林裡深呼吸
-            </span>
-          </motion.h1>
+            </h2>
+          </motion.div>
 
           <motion.p
-            className="text-stone-600 text-lg md:text-xl leading-relaxed"
+            className="text-stone-700 md:text-stone-600 text-sm md:text-xl leading-relaxed font-medium md:font-normal max-w-xs md:max-w-none mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            這裡沒有完美的教養SOP，只有被理解的溫暖、好玩的親子遊戲，還有一點點工程師媽媽的邏輯思考。
+            這裡沒有完美的教養SOP，只有被理解的溫暖、好玩的親子遊戲，還有一點點工程師媽媽的邏輯
           </motion.p>
 
           {visitCount !== null && (
@@ -119,11 +121,11 @@ export function LandingPage({ setView }: LandingPageProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="flex items-center justify-center gap-2 pt-4"
+              className="flex items-center justify-center gap-2 pt-2 md:pt-4"
             >
-              <div className="flex items-center gap-2 bg-white/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm hover:bg-white/50 transition-colors cursor-default">
-                <User className="w-4 h-4 text-emerald-700" />
-                <span className="text-sm text-emerald-900 font-medium">
+              <div className="flex items-center gap-2 bg-white/60 md:bg-white/40 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-white/50 shadow-sm hover:bg-white/50 transition-colors cursor-default">
+                <User className="w-3 h-3 md:w-4 md:h-4 text-emerald-700" />
+                <span className="text-xs md:text-sm text-emerald-900 font-medium">
                   已有{" "}
                   <span className="font-bold text-emerald-700">
                     {visitCount.toLocaleString()}

@@ -111,13 +111,13 @@ app.post("/make-server-92f3175c/articles/:id/view", async (c) => {
 
 // Signup Route
 app.post("/make-server-92f3175c/signup", async (c) => {
-  const { email, password, name } = await c.req.json();
+  const { email, password, name, birthday } = await c.req.json();
   const supabaseAdmin = getSupabase(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '');
 
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
     email,
     password,
-    user_metadata: { name },
+    user_metadata: { name, birthday },
     email_confirm: true
   });
 
@@ -336,6 +336,151 @@ app.post("/make-server-92f3175c/articles/:id/collect", async (c) => {
   } catch (error) {
     console.error(`Error toggling collection for article ${articleId}:`, error);
     return c.json({ error: "Failed to toggle collection" }, 500);
+  }
+});
+
+// Record Game Session
+app.post("/make-server-92f3175c/game/record", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      console.error("Game record error: Auth failed", error);
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const { gameId, score, timePlayed, gameType } = await c.req.json();
+  const key = `game_records_${user.id}`;
+  
+  try {
+      const currentRecordsRaw = await kv.get(key);
+      let records = [];
+      if (typeof currentRecordsRaw === 'string') {
+          try { records = JSON.parse(currentRecordsRaw); } catch {}
+      } else if (Array.isArray(currentRecordsRaw)) {
+          records = currentRecordsRaw;
+      }
+
+      const newRecord = {
+          id: crypto.randomUUID(),
+          gameId,
+          score, // e.g. "Completed", or number of moves
+          timePlayed, // in seconds
+          gameType, // e.g. "Matching", "Sorting"
+          date: new Date().toISOString()
+      };
+
+      records.unshift(newRecord); // Add to beginning
+      // Keep only last 50 records to save space
+      if (records.length > 50) records = records.slice(0, 50);
+
+      await kv.set(key, JSON.stringify(records));
+      return c.json({ success: true, record: newRecord });
+  } catch (error) {
+      console.error("Error recording game:", error);
+      return c.json({ error: "Failed to record game" }, 500);
+  }
+});
+
+// Get User Game Records
+app.get("/make-server-92f3175c/game/records", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const key = `game_records_${user.id}`;
+  try {
+      const recordsRaw = await kv.get(key);
+      let records = [];
+      if (typeof recordsRaw === 'string') {
+          try { records = JSON.parse(recordsRaw); } catch {}
+      } else if (Array.isArray(recordsRaw)) {
+          records = recordsRaw;
+      }
+      return c.json({ records });
+  } catch (error) {
+      console.error("Error fetching game records:", error);
+      return c.json({ error: "Failed to fetch records" }, 500);
+  }
+});
+
+// Save User Settings
+app.post("/make-server-92f3175c/settings", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const { dailyLimit, birthday, name } = await c.req.json();
+  const key = `user_settings_${user.id}`;
+  
+  try {
+      // 1. Save App Settings (KV)
+      if (dailyLimit !== undefined) {
+        await kv.set(key, { dailyLimit });
+      }
+
+      // 2. Update User Profile (Supabase Auth)
+      if (birthday || name) {
+          const supabaseAdmin = getSupabase(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '');
+          const updates: any = {};
+          if (birthday) updates.birthday = birthday;
+          if (name) updates.name = name;
+
+          const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+              user.id,
+              { user_metadata: updates }
+          );
+
+          if (updateError) {
+              console.error("Error updating user metadata:", updateError);
+              throw updateError;
+          }
+      }
+
+      return c.json({ success: true });
+  } catch (error) {
+      console.error("Error saving settings:", error);
+      return c.json({ error: "Failed to save settings" }, 500);
+  }
+});
+
+// Get User Settings
+app.get("/make-server-92f3175c/settings", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const key = `user_settings_${user.id}`;
+  try {
+      const settings = await kv.get(key);
+      if (settings && typeof settings === 'object' && settings.dailyLimit) {
+          return c.json({ dailyLimit: parseInt(settings.dailyLimit) });
+      }
+      return c.json({ dailyLimit: 30 }); // Default
+  } catch (error) {
+      console.error("Error fetching settings:", error);
+      return c.json({ error: "Failed to fetch settings" }, 500);
   }
 });
 

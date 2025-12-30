@@ -7,8 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
-const authorAvatar = "/assets/author-avatar.png";
-const articleImage = "/assets/article-image-default.png";
+const authorAvatar = "/Morimori/assets/author-avatar.png";
+const articleImage = "/Morimori/assets/article-image-default.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -303,8 +303,9 @@ export function ParentingSection() {
                  <div className="flex items-center justify-between pt-6 border-t border-stone-100">
                     <div className="flex items-center gap-2">
                         <Avatar className="w-8 h-8 border-2 border-white shadow-sm">
-                            <AvatarImage src={featuredArticle.authorImage || `https://api.dicebear.com/7.x/micah/svg?seed=${featuredArticle.author}`} />
-                            <AvatarFallback>{featuredArticle.author[0]}</AvatarFallback>
+                            <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-base">
+                                👩‍💻
+                            </div>
                         </Avatar>
                         <span className="text-sm font-medium text-stone-600">{featuredArticle.author}</span>
                     </div>
@@ -362,8 +363,9 @@ export function ParentingSection() {
                 <div className="flex items-center justify-between pt-4 border-t border-stone-50">
                     <div className="flex items-center gap-2">
                         <Avatar className="w-6 h-6">
-                            <AvatarImage src={article.authorImage || `https://api.dicebear.com/7.x/micah/svg?seed=${article.author}`} />
-                            <AvatarFallback>{article.author[0]}</AvatarFallback>
+                            <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-xs">
+                                👩‍💻
+                            </div>
                         </Avatar>
                         <span className="text-xs font-medium text-stone-600">{article.author}</span>
                     </div>

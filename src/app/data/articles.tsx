@@ -1,9 +1,9 @@
 import React from 'react';
 import { Sparkles, Check, Star, Wind, Shield, HeartHandshake, Heart, MessageCircle, Gamepad2, Sun, Flower2, Moon } from 'lucide-react';
-const authorAvatar = "/assets/author-avatar.png";
-const articleImage = "/assets/article-image-default.png";
-const letterImage = "/assets/article-letter.png";
-const notOnPurposeImage = "/assets/article-not-on-purpose.png";
+const authorAvatar = "/Morimori/assets/author-avatar.png";
+const articleImage = "/Morimori/assets/article-image-default.png";
+const letterImage = "/Morimori/assets/article-letter.png";
+const notOnPurposeImage = "/Morimori/assets/article-not-on-purpose.png";
 
 export const ARTICLES = [
   {

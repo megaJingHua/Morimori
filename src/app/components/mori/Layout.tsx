@@ -12,7 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "../ui/sheet";
+import { getZodiac } from '../../utils/zodiac';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -36,6 +37,8 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const zodiac = user ? getZodiac(user.user_metadata?.birthday) : null;
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] font-sans selection:bg-emerald-100 selection:text-emerald-900">
@@ -83,8 +86,14 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                             <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
-                                <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${user.id}`} alt={user.email || ''} />
+                             <Avatar className="h-9 w-9 border-2 border-white shadow-sm bg-white">
+                                {zodiac ? (
+                                    <div className="w-full h-full flex items-center justify-center bg-yellow-50 text-xl">
+                                        {zodiac.emoji}
+                                    </div>
+                                ) : (
+                                    <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${user.id}`} alt={user.email || ''} />
+                                )}
                                 <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
                              </Avatar>
                         </Button>
@@ -126,6 +135,10 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                    <SheetHeader className="sr-only">
+                        <SheetTitle>導覽選單</SheetTitle>
+                        <SheetDescription>網站導覽連結</SheetDescription>
+                    </SheetHeader>
                     <div className="flex flex-col h-full pt-10 space-y-6">
                         {navItems.map(item => (
                             <button

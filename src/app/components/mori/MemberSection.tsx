@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Settings, Clock, Award, Star, Shield, Lock, Mail, Loader2, LogOut, Bookmark, Heart, Calendar, Eye, ArrowLeft } from 'lucide-react';
+import { User, Settings, Clock, Award, Star, Shield, Lock, Mail, Loader2, LogOut, Bookmark, Heart, Calendar, Eye, ArrowLeft, Gamepad2, Save, Edit2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -17,10 +17,19 @@ import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
 import { ARTICLES } from '../../data/articles';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { ArticleDetail } from './ArticleDetail';
+import { getZodiac } from '../../utils/zodiac';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 
 export function MemberSection() {
-  const { user, loading, signOut, session } = useAuth();
-  const { dailyLimit, setDailyLimit, timeUsed } = useGameTime();
+  const { user, loading, signOut, session, supabase } = useAuth();
+  const { dailyLimit, setDailyLimit, timeUsed, saveDailyLimit } = useGameTime();
   const [authTab, setAuthTab] = useState('login');
   
   // Login State
@@ -32,7 +41,14 @@ export function MemberSection() {
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [signupBirthday, setSignupBirthday] = useState('');
   const [isSigningUp, setIsSigningUp] = useState(false);
+
+  // Profile Settings State
+  const [profileName, setProfileName] = useState('');
+  const [profileBirthday, setProfileBirthday] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Collections State
   const [userCollections, setUserCollections] = useState<string[]>([]);
@@ -41,6 +57,16 @@ export function MemberSection() {
   const [collectionCounts, setCollectionCounts] = useState<Record<string, number>>({});
   const [userLikes, setUserLikes] = useState<string[]>([]);
   const [selectedArticleId, setSelectedArticleId] = useState<number | null>(null);
+
+  // Game Records State
+  const [gameRecords, setGameRecords] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+        setProfileName(user.user_metadata?.name || '');
+        setProfileBirthday(user.user_metadata?.birthday || '');
+    }
+  }, [user]);
 
   useEffect(() => {
       const fetchCounts = async () => {
@@ -79,6 +105,7 @@ export function MemberSection() {
       const fetchUserData = async () => {
           if (!session?.access_token) return;
           try {
+              // Likes
               const likesRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/user-likes`, {
                   headers: { 
                       'Authorization': `Bearer ${publicAnonKey}`,
@@ -90,6 +117,7 @@ export function MemberSection() {
                   setUserLikes(data.likes);
               }
 
+              // Collections
               const collectionsRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/user-collections`, {
                   headers: { 
                       'Authorization': `Bearer ${publicAnonKey}`,
@@ -100,6 +128,19 @@ export function MemberSection() {
                   const data = await collectionsRes.json();
                   setUserCollections(data.collections);
               }
+
+              // Game Records
+              const recordsRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/game/records`, {
+                  headers: { 
+                      'Authorization': `Bearer ${publicAnonKey}`,
+                      'X-Access-Token': session.access_token
+                  }
+              });
+              if (recordsRes.ok) {
+                  const data = await recordsRes.json();
+                  setGameRecords(data.records || []);
+              }
+
           } catch (e) {
               console.error(e);
           }
@@ -109,8 +150,27 @@ export function MemberSection() {
       } else {
           setUserLikes([]);
           setUserCollections([]);
+          setGameRecords([]);
       }
   }, [user, session]);
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+        const { error } = await supabase.auth.updateUser({
+            data: { name: profileName, birthday: profileBirthday }
+        });
+
+        if (error) throw error;
+        toast.success("個人資料已更新");
+        setIsEditingProfile(false);
+    } catch (error: any) {
+        console.error("Error saving profile:", error);
+        toast.error(`更新失敗: ${error.message}`);
+    } finally {
+        setIsSavingProfile(false);
+    }
+  };
 
   const handleToggleLike = async (id: number) => {
       if (!user || !session) return;
@@ -167,8 +227,6 @@ export function MemberSection() {
               } else {
                   setUserCollections(prev => prev.filter(cid => cid !== id.toString()));
                   toast.info("已取消收藏");
-                  // Since we are in member section viewing collections, if we uncollect, should we remove it from view?
-                  // Maybe keep it until refresh or view change to avoid jarring UI.
               }
           }
       } catch (e) { console.error(e); }
@@ -205,7 +263,8 @@ export function MemberSection() {
             body: JSON.stringify({
                 email: signupEmail,
                 password: signupPassword,
-                name: signupName
+                name: signupName,
+                birthday: signupBirthday
             })
         });
         
@@ -297,6 +356,16 @@ export function MemberSection() {
                                 />
                             </div>
                             <div className="space-y-2">
+                                <Label htmlFor="birthday">生日 (用於計算生肖)</Label>
+                                <Input 
+                                    id="birthday" 
+                                    type="date"
+                                    value={signupBirthday}
+                                    onChange={(e) => setSignupBirthday(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
                                 <Label htmlFor="signup-email">Email</Label>
                                 <Input 
                                     id="signup-email" 
@@ -358,10 +427,11 @@ export function MemberSection() {
 
   // Logged In View
   const collectedArticles = ARTICLES.filter(a => userCollections.includes(a.id.toString()));
+  const zodiac = getZodiac(user.user_metadata?.birthday);
 
   return (
     <div className="max-w-4xl mx-auto py-8">
-       <div className="mb-8 text-center flex items-center justify-between">
+       <div className="mb-8 text-center flex items-center justify-between px-4 md:px-0">
             <div>
                 <h2 className="text-3xl font-bold text-stone-800 text-left">家長設定中心</h2>
                 <p className="text-stone-500 mt-2 text-left">歡迎回來，{user.user_metadata?.name || '家長'}。</p>
@@ -371,25 +441,88 @@ export function MemberSection() {
             </Button>
        </div>
 
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 md:px-0">
             {/* Sidebar / Profile Card */}
             <div className="lg:col-span-1 space-y-6">
                 <Card className="border-none shadow-md overflow-hidden bg-white">
                     <div className="h-24 bg-gradient-to-r from-emerald-100 to-teal-100"></div>
                     <CardContent className="relative pt-0 pb-8 px-6 text-center">
-                        <Avatar className="w-24 h-24 border-4 border-white shadow-sm mx-auto -mt-12 mb-4">
-                            <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${user.id}`} />
+                        <Avatar className="w-24 h-24 border-4 border-white shadow-sm mx-auto -mt-12 mb-4 bg-white">
+                            {/* If zodiac exists, show zodiac emoji, else show dicebear */}
+                            {zodiac ? (
+                                <div className="w-full h-full flex items-center justify-center bg-yellow-50 text-6xl">
+                                    {zodiac.emoji}
+                                </div>
+                            ) : (
+                                <AvatarImage src={`https://api.dicebear.com/7.x/micah/svg?seed=${user.id}`} />
+                            )}
                             <AvatarFallback>{user.email?.[0]?.toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-xl font-bold text-stone-800">{user.user_metadata?.name || user.email}</h3>
-                        <p className="text-sm text-stone-500 mb-6">森森邏輯會員</p>
+                        
+                        {!isEditingProfile ? (
+                            <div className="mb-6 relative group">
+                                <h3 className="text-xl font-bold text-stone-800">{user.user_metadata?.name || user.email}</h3>
+                                <p className="text-sm text-stone-500 flex items-center justify-center gap-2 mt-1">
+                                    森森邏輯會員 
+                                    {zodiac && <Badge variant="outline" className="text-xs font-normal bg-yellow-50 text-yellow-700 border-yellow-200">屬{zodiac.name}</Badge>}
+                                </p>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="absolute -right-2 top-0 text-stone-400 hover:text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => setIsEditingProfile(true)}
+                                >
+                                    <Edit2 className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="mb-6 space-y-3 bg-stone-50 p-4 rounded-xl border border-stone-100 animate-in fade-in slide-in-from-top-2">
+                                <div className="space-y-1 text-left">
+                                    <Label htmlFor="edit-name" className="text-xs text-stone-500">暱稱</Label>
+                                    <Input 
+                                        id="edit-name"
+                                        value={profileName} 
+                                        onChange={(e) => setProfileName(e.target.value)} 
+                                        className="h-8 text-sm bg-white"
+                                    />
+                                </div>
+                                <div className="space-y-1 text-left">
+                                    <Label htmlFor="edit-birthday" className="text-xs text-stone-500">生日</Label>
+                                    <Input 
+                                        id="edit-birthday"
+                                        type="date"
+                                        value={profileBirthday} 
+                                        onChange={(e) => setProfileBirthday(e.target.value)} 
+                                        className="h-8 text-sm bg-white"
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="flex-1 h-8 text-xs"
+                                        onClick={() => setIsEditingProfile(false)}
+                                    >
+                                        取消
+                                    </Button>
+                                    <Button 
+                                        size="sm" 
+                                        className="flex-1 h-8 text-xs bg-stone-800 hover:bg-stone-900"
+                                        onClick={handleSaveProfile}
+                                        disabled={isSavingProfile}
+                                    >
+                                        {isSavingProfile ? <Loader2 className="w-3 h-3 animate-spin" /> : '儲存'}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                         
                         <div className="flex justify-center gap-4 text-sm">
                             <div className="text-center p-3 bg-stone-50 rounded-xl flex-1 cursor-pointer hover:bg-stone-100 transition-colors" onClick={() => document.getElementById('tab-collections')?.click()}>
                                 <div className="font-bold text-stone-800 text-lg">{userCollections.length}</div>
                                 <div className="text-stone-400 text-xs">文章收藏</div>
                             </div>
-                            <div className="text-center p-3 bg-stone-50 rounded-xl flex-1">
+                            <div className="text-center p-3 bg-stone-50 rounded-xl flex-1 cursor-pointer hover:bg-stone-100 transition-colors" onClick={() => document.getElementById('tab-records')?.click()}>
                                 <div className="font-bold text-emerald-600 text-lg">{Math.floor(timeUsed / 60)}m</div>
                                 <div className="text-stone-400 text-xs">今日遊戲</div>
                             </div>
@@ -428,6 +561,7 @@ export function MemberSection() {
                             遊戲管理
                         </TabsTrigger>
                         <TabsTrigger 
+                            id="tab-records"
                             value="records" 
                             className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-3"
                         >
@@ -499,6 +633,7 @@ export function MemberSection() {
                                         <Slider 
                                             value={[dailyLimit]} 
                                             onValueChange={(val) => setDailyLimit(val[0])} 
+                                            onValueCommit={(val) => saveDailyLimit(val[0])}
                                             max={60} 
                                             step={5} 
                                             className="py-4" 
@@ -549,20 +684,44 @@ export function MemberSection() {
                             animate={{ opacity: 1, y: 0 }}
                             className="space-y-4"
                         >
-                            <Card className="bg-stone-50 border-none">
-                                <CardContent className="p-8 text-center space-y-4">
-                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
-                                        <Lock className="w-8 h-8 text-stone-300" />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-stone-600">會員專屬功能</h3>
-                                    <p className="text-stone-500 text-sm max-w-xs mx-auto">
-                                        您現在已是會員，但此功能仍在開發中。未來您可以查看孩子最喜歡玩哪類遊戲，以及專注力的變化曲線。
-                                    </p>
-                                    <Button variant="outline" className="mt-4" disabled>
-                                        敬請期待
-                                    </Button>
-                                </CardContent>
-                            </Card>
+                           {gameRecords.length > 0 ? (
+                               <Card className="border-stone-100 shadow-sm overflow-hidden bg-white">
+                                   <Table>
+                                       <TableHeader>
+                                           <TableRow className="bg-stone-50 hover:bg-stone-50">
+                                               <TableHead className="w-[120px]">日期</TableHead>
+                                               <TableHead>遊戲種類</TableHead>
+                                               <TableHead>分數</TableHead>
+                                               <TableHead className="text-right">時間</TableHead>
+                                           </TableRow>
+                                       </TableHeader>
+                                       <TableBody>
+                                           {gameRecords.map((record, idx) => (
+                                               <TableRow key={idx}>
+                                                   <TableCell className="font-medium text-stone-600">
+                                                       {new Date(record.date).toLocaleDateString()} <span className="text-xs text-stone-400 ml-1">{new Date(record.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                                   </TableCell>
+                                                   <TableCell className="font-medium text-emerald-700">{record.gameType}</TableCell>
+                                                   <TableCell>{record.score}</TableCell>
+                                                   <TableCell className="text-right font-mono">{record.timePlayed} 秒</TableCell>
+                                               </TableRow>
+                                           ))}
+                                       </TableBody>
+                                   </Table>
+                               </Card>
+                           ) : (
+                                <Card className="bg-stone-50 border-none">
+                                    <CardContent className="p-8 text-center space-y-4">
+                                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                            <Gamepad2 className="w-8 h-8 text-stone-300" />
+                                        </div>
+                                        <h3 className="text-lg font-bold text-stone-600">還沒有遊玩紀錄</h3>
+                                        <p className="text-stone-500 text-sm max-w-xs mx-auto">
+                                            帶孩子去「親子遊戲區」玩一玩，紀錄就會出現在這裡喔！
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                           )}
                         </motion.div>
                     </TabsContent>
                 </Tabs>

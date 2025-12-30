@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Clock, User, Check, RefreshCw, Star, Trophy, Moon, Home, Hourglass } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-import { Dialog, DialogContent } from '../ui/dialog';
 import { useGameTime } from '../../context/GameTimeContext';
-const animalsSprite = "/assets/animals-sprite.png";
+const animalsSprite = "/Morimori/assets/animals-sprite.png";
 
 // Game Types
 interface Game {
@@ -76,7 +75,7 @@ export function GameSection() {
       <div className="text-center space-y-4 mb-12">
         <h2 className="text-3xl font-bold text-stone-800">親子遊戲大廳</h2>
         <p className="text-stone-500 max-w-2xl mx-auto">
-          每天 10 分鐘，把手機放下，我們一起玩。
+          陪伴孩子也可以是一起玩遊戲。
         </p>
       </div>
 
@@ -146,7 +145,8 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [isWon, setIsWon] = useState(false);
   const [moves, setMoves] = useState(0);
-  const { startTimer, stopTimer, isTimeUp } = useGameTime();
+  const { startTimer, stopTimer, isTimeUp, recordGame } = useGameTime();
+  const startTimeRef = useRef(Date.now());
 
   useEffect(() => {
     startTimer();
@@ -169,7 +169,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
                       <Moon className="w-12 h-12 text-indigo-500" />
                   </div>
                   <div className="space-y-2">
-                      <h2 className="text-2xl font-bold text-stone-800">時間到囉！休息一下吧</h2>
+                      <h2 className="text-2xl font-bold text-stone-800">鎖定! 眼睛該休息囉!!</h2>
                       <p className="text-stone-500 leading-relaxed">
                           今天的眼睛運動時間結束了。<br/>
                           爸爸媽媽，我們一起去喝杯水、看看遠方吧！
@@ -201,6 +201,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
     setFlippedCards([]);
     setIsWon(false);
     setMoves(0);
+    startTimeRef.current = Date.now();
   };
 
   const handleCardClick = (id: number) => {
@@ -239,6 +240,13 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
         // Check win
         if (matchedCards.every(c => c.isMatched)) {
           setIsWon(true);
+          const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
+          recordGame({
+             gameId: 'matching',
+             gameType: '森林配對樂',
+             score: `步數: ${moves + 1}`,
+             timePlayed: duration
+          });
         }
       }, 500);
     } else {
