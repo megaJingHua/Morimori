@@ -25,7 +25,11 @@ jobs:
           # 切換到 main
           git checkout main
 
-                    # 2. 長回資料夾並精準拿回 deploy.yml
+          # 長回資料夾並精準拿回 public/assets
+          mkdir -p public/assets
+          git checkout auto -- public/assets
+
+          # 長回資料夾並精準拿回 deploy.yml
           mkdir -p .github/workflows
           git checkout auto -- .github/workflows/deploy.yml 
           
