@@ -7,8 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
-const authorAvatar = `${import.meta.env.BASE_URL}assets/author-avatar.png`;
-const articleImage = `${import.meta.env.BASE_URL}assets/article-image-default.png`;
+const authorAvatar = "/assets/author-avatar.png";
+const articleImage = "/assets/article-image-default.png";
 import {
   DropdownMenu,
   DropdownMenuContent,

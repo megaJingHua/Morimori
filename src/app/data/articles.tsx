@@ -1,9 +1,9 @@
 import React from 'react';
 import { Sparkles, Check, Star, Wind, Shield, HeartHandshake, Heart, MessageCircle, Gamepad2, Sun, Flower2, Moon } from 'lucide-react';
-const authorAvatar = `${import.meta.env.BASE_URL}assets/author-avatar.png`;
-const articleImage = `${import.meta.env.BASE_URL}assets/article-image-default.png`;
-const letterImage = `${import.meta.env.BASE_URL}assets/article-letter.png`;
-const notOnPurposeImage = `${import.meta.env.BASE_URL}assets/article-not-on-purpose.png`;
+const authorAvatar = "/assets/author-avatar.png";
+const articleImage = "/assets/article-image-default.png";
+const letterImage = "/assets/article-letter.png";
+const notOnPurposeImage = "/assets/article-not-on-purpose.png";
 
 export const ARTICLES = [
   {

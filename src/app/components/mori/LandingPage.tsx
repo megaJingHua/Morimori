@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
+import {
+  projectId,
+  publicAnonKey,
+} from "../../../../utils/supabase/info";
 import {
   BookOpen,
   Gamepad2,
@@ -14,33 +17,39 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 // Standard Web Asset Imports
-const heroBackground = `${import.meta.env.BASE_URL}assets/landing-hero.png`;
-const parentingImage = `${import.meta.env.BASE_URL}assets/landing-parenting.png`;
-const parentingGamesImage = `${import.meta.env.BASE_URL}assets/landing-games.png`;
-const technicalImage = `${import.meta.env.BASE_URL}assets/landing-tech.png`;
+const heroBackground = "/Morimori/assets/landing-hero.png";
+const parentingImage = "/Morimori/assets/landing-parenting.png";
+const parentingGamesImage =
+  "/Morimori/assets/landing-games.png";
+const technicalImage = "/Morimori/assets/landing-tech.png";
 
 interface LandingPageProps {
   setView: (view: string) => void;
 }
 
 export function LandingPage({ setView }: LandingPageProps) {
-  const [visitCount, setVisitCount] = useState<number | null>(null);
+  const [visitCount, setVisitCount] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchCount = async () => {
-        try {
-            const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/visit-count`, {
-                headers: {
-                    'Authorization': `Bearer ${publicAnonKey}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setVisitCount(data.count);
-            }
-        } catch (error) {
-            console.error('Failed to fetch visit count:', error);
+      try {
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/visit-count`,
+          {
+            headers: {
+              Authorization: `Bearer ${publicAnonKey}`,
+            },
+          },
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setVisitCount(data.count);
         }
+      } catch (error) {
+        console.error("Failed to fetch visit count:", error);
+      }
     };
     fetchCount();
   }, []);
@@ -107,17 +116,21 @@ export function LandingPage({ setView }: LandingPageProps) {
 
           {visitCount !== null && (
             <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="flex items-center justify-center gap-2 pt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="flex items-center justify-center gap-2 pt-4"
             >
-                <div className="flex items-center gap-2 bg-white/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm hover:bg-white/50 transition-colors cursor-default">
-                    <User className="w-4 h-4 text-emerald-700" />
-                    <span className="text-sm text-emerald-900 font-medium">
-                        已有 <span className="font-bold text-emerald-700">{visitCount.toLocaleString()}</span> 位家長造訪
-                    </span>
-                </div>
+              <div className="flex items-center gap-2 bg-white/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm hover:bg-white/50 transition-colors cursor-default">
+                <User className="w-4 h-4 text-emerald-700" />
+                <span className="text-sm text-emerald-900 font-medium">
+                  已有{" "}
+                  <span className="font-bold text-emerald-700">
+                    {visitCount.toLocaleString()}
+                  </span>{" "}
+                  位家長造訪
+                </span>
+              </div>
             </motion.div>
           )}
         </div>
@@ -133,7 +146,7 @@ export function LandingPage({ setView }: LandingPageProps) {
       >
         {/* Parenting Articles */}
         <motion.div variants={item} className="h-full">
-          <Card 
+          <Card
             className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-orange-50/50 cursor-pointer"
             onClick={() => setView("parenting")}
           >
@@ -167,7 +180,7 @@ export function LandingPage({ setView }: LandingPageProps) {
 
         {/* Parenting Games */}
         <motion.div variants={item} className="h-full">
-          <Card 
+          <Card
             className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-emerald-50/50 cursor-pointer"
             onClick={() => setView("games")}
           >
@@ -202,7 +215,7 @@ export function LandingPage({ setView }: LandingPageProps) {
 
         {/* Technical Blog */}
         <motion.div variants={item} className="h-full">
-          <Card 
+          <Card
             className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-slate-50/50 cursor-pointer"
             onClick={() => setView("tech")}
           >
