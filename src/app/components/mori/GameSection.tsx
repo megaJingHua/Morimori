@@ -1,11 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Clock, User, Check, RefreshCw, Star, Trophy, Moon, Home, Hourglass } from 'lucide-react';
+import { ArrowLeft, Clock, User, Check, RefreshCw, Star, Trophy, Moon, Home, Hourglass, Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { useGameTime } from '../../context/GameTimeContext';
+import forestMatchingImageFigma from 'figma:asset/547c0c08904dbc199c976f126cb140b91d0d3e42.png';
+
+// Helper to switch between Figma asset (preview) and GitHub Pages asset (production)
+const getAssetPath = (figmaAsset: string, githubFilename: string) => {
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/Morimori/')) {
+        return `/Morimori/assets/${githubFilename}`;
+    }
+    return figmaAsset;
+};
 
 // Game Types
 interface Game {
@@ -25,7 +34,7 @@ const GAMES: Game[] = [
     description: '找出相同的動物好朋友！訓練記憶力與專注力。',
     age: '3-5 歲',
     time: '5-10 分',
-    image: 'https://images.unsplash.com/photo-1670234794408-030a53941f87?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraWRzJTIwcGxheWluZyUyMG1hdGNoaW5nJTIwZ2FtZSUyMGNhcmRzJTIwaGFwcHl8ZW58MXx8fHwxNzY2NzE5NjM4fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    image: getAssetPath(forestMatchingImageFigma, 'forest-matching.png'),
     color: 'bg-emerald-100 text-emerald-800'
   },
   {
@@ -142,17 +151,44 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [isWon, setIsWon] = useState(false);
   const [moves, setMoves] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const { startTimer, stopTimer, isTimeUp, recordGame } = useGameTime();
   const startTimeRef = useRef(Date.now());
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     startTimer();
-    return () => stopTimer();
+    return () => {
+        stopTimer();
+        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
   }, []);
 
   useEffect(() => {
     shuffleCards();
   }, []);
+
+  // Update elapsed time
+  useEffect(() => {
+      if (isWon) {
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+          return;
+      }
+      
+      timerIntervalRef.current = setInterval(() => {
+          setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      }, 1000);
+
+      return () => {
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      };
+  }, [isWon]);
+
+  const formatTime = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   if (isTimeUp) {
       return (
@@ -199,6 +235,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
     setFlippedCards([]);
     setIsWon(false);
     setMoves(0);
+    setElapsedTime(0);
     startTimeRef.current = Date.now();
   };
 
@@ -239,14 +276,15 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
         if (matchedCards.every(c => c.isMatched)) {
           setIsWon(true);
           const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
+          setElapsedTime(duration); // Ensure final time is accurate
           recordGame({
              gameId: 'matching',
              gameType: '森林配對樂',
-             score: `步數: ${moves + 1}`,
+             score: `步數: ${moves + 1} / 時間: ${formatTime(duration)}`,
              timePlayed: duration
           });
         }
-      }, 500);
+      }, 300); // Faster match animation
     } else {
       // No match
       setTimeout(() => {
@@ -257,7 +295,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
         );
         setCards(resetCards);
         setFlippedCards([]);
-      }, 1000);
+      }, 600); // Faster mismatch reset (was 1000)
     }
   };
 
@@ -269,6 +307,10 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
           <ArrowLeft className="w-4 h-4 mr-2" /> 離開遊戲
         </Button>
         <div className="flex gap-4">
+             <Badge variant="outline" className="px-4 py-2 text-lg bg-white border-stone-200 font-mono">
+                <Clock className="w-4 h-4 mr-2 text-stone-400" />
+                {formatTime(elapsedTime)}
+             </Badge>
              <Badge variant="outline" className="px-4 py-2 text-lg bg-white border-stone-200">
                 步數: {moves}
              </Badge>
@@ -288,9 +330,9 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
                     onClick={() => handleCardClick(card.id)}
                 >
                     <motion.div
-                        className="relative w-full h-full text-center transition-all duration-500 [transform-style:preserve-3d]"
+                        className="relative w-full h-full text-center transition-all [transform-style:preserve-3d]"
                         animate={{ rotateY: card.isFlipped ? 180 : 0 }}
-                        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
+                        transition={{ duration: 0.3 }} // Faster flip
                     >
                         {/* Front (Hidden) */}
                         <div 
@@ -318,15 +360,49 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
              <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="text-center space-y-6"
+                className="text-center space-y-6 relative"
              >
-                 <div className="w-32 h-32 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                 {/* Celebration Particles */}
+                 {Array.from({ length: 20 }).map((_, i) => (
+                    <motion.div
+                        key={i}
+                        initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
+                        animate={{
+                            x: (Math.random() - 0.5) * 600,
+                            y: (Math.random() - 0.5) * 600,
+                            opacity: 0,
+                            scale: Math.random() * 1.5 + 0.5,
+                            rotate: Math.random() * 360
+                        }}
+                        transition={{ duration: 2, ease: "easeOut", repeat: Infinity, repeatDelay: 1 }}
+                        className="absolute top-1/2 left-1/2 w-3 h-3 rounded-full"
+                        style={{ backgroundColor: ['#FFD700', '#FF6347', '#40E0D0', '#FF69B4', '#10B981'][Math.floor(Math.random() * 5)] }}
+                    />
+                 ))}
+
+                 <div className="w-32 h-32 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10 animate-bounce">
                     <Trophy className="w-16 h-16 text-yellow-500" />
+                    <motion.div 
+                        animate={{ rotate: 360 }} 
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                        className="absolute -top-4 -right-4 text-yellow-400"
+                    >
+                        <Sparkles className="w-10 h-10 fill-yellow-400" />
+                    </motion.div>
                  </div>
-                 <h2 className="text-4xl font-bold text-stone-800">太棒了！挑戰成功！</h2>
-                 <p className="text-xl text-stone-500">現在，轉身給爸爸媽媽一個大大的擊掌！✋</p>
-                 <Button onClick={shuffleCards} size="lg" className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-lg px-8 py-6 mt-8">
-                    再玩一次
+                 
+                 <div className="relative z-10">
+                    <h2 className="text-4xl font-bold text-stone-800 mb-2">太棒了！挑戰成功！</h2>
+                    <div className="flex justify-center gap-4 text-stone-500 mb-4 font-mono text-lg">
+                        <span className="flex items-center gap-1"><Clock className="w-5 h-5"/> {formatTime(elapsedTime)}</span>
+                        <span>|</span>
+                        <span>{moves} 步</span>
+                    </div>
+                    <p className="text-xl text-stone-500">現在，轉身給爸爸媽媽一個大大的擊掌！✋</p>
+                 </div>
+
+                 <Button onClick={shuffleCards} size="lg" className="relative z-10 rounded-full bg-emerald-600 hover:bg-emerald-700 text-lg px-8 py-6 mt-8 shadow-xl shadow-emerald-200">
+                    <RefreshCw className="w-5 h-5 mr-2" /> 再玩一次
                  </Button>
              </motion.div>
          )}
