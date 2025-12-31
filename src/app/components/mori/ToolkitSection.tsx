@@ -1,23 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Calculator, PiggyBank, CalendarRange, Lock, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Calculator, PiggyBank, CalendarRange, Lock, ArrowLeft, Plus, Trash2, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Badge } from '../ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { toast } from 'sonner';
+import { projectId } from '../../../../utils/supabase/info';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
 
 interface ToolkitSectionProps {
   setView: (view: string) => void;
 }
 
+const SERVER_URL = `https://${projectId}.supabase.co/functions/v1/make-server-92f3175c`;
+
 export function ToolkitSection({ setView }: ToolkitSectionProps) {
   const { user } = useAuth();
   const [activeTool, setActiveTool] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTool) {
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        
+        // For calculator, strictly prevent touch actions to avoid zooming/scrolling
+        if (activeTool === 'calculator') {
+             document.body.style.touchAction = 'none';
+        } else {
+             // For others, prevent rubber-banding
+             document.body.style.overscrollBehavior = 'none';
+        }
+    } else {
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+        document.body.style.overscrollBehavior = '';
+    }
+    return () => {
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+        document.body.style.overscrollBehavior = '';
+    };
+  }, [activeTool]);
 
   if (!user) {
     return (
@@ -45,58 +76,67 @@ export function ToolkitSection({ setView }: ToolkitSectionProps) {
     );
   }
 
-  return (
-    <div className="max-w-5xl mx-auto py-8 space-y-8">
-      {!activeTool ? (
-        <div className="space-y-8">
-            <div className="text-center space-y-4">
-                <h2 className="text-3xl font-bold text-stone-800">小學生的萬能工具包</h2>
-                <p className="text-stone-500">
-                    選一個你需要的工具，開始練習管理自己的生活吧！
-                </p>
+  if (activeTool) {
+    return (
+        <div className="fixed inset-0 z-50 bg-stone-50 flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex-none px-4 py-3 bg-white/90 backdrop-blur-md shadow-sm flex items-center z-20">
+                <Button variant="ghost" onClick={() => setActiveTool(null)} className="-ml-2 text-stone-500 hover:bg-stone-100">
+                    <ArrowLeft className="w-5 h-5 mr-1" /> 返回
+                </Button>
+                <div className="flex items-center gap-2 ml-2 font-bold text-stone-700 text-lg">
+                    {activeTool === 'calculator' && <><Calculator className="w-5 h-5 text-blue-500" /> 快樂計算機</>}
+                    {activeTool === 'allowance' && <><PiggyBank className="w-5 h-5 text-pink-500" /> 零用錢小帳本</>}
+                    {activeTool === 'schedule' && <><CalendarRange className="w-5 h-5 text-amber-500" /> 我的課表</>}
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <ToolCard 
-                    title="快樂計算機" 
-                    description="色彩繽紛的大按鈕，幫你算算術！" 
-                    icon={Calculator} 
-                    color="bg-blue-50 text-blue-600"
-                    onClick={() => setActiveTool('calculator')}
-                />
-                <ToolCard 
-                    title="零用錢小帳本" 
-                    description="記下每一筆收入與支出，成為理財小達人。" 
-                    icon={PiggyBank} 
-                    color="bg-pink-50 text-pink-600"
-                    onClick={() => setActiveTool('allowance')}
-                />
-                <ToolCard 
-                    title="我的課表" 
-                    description="清楚記錄每天的課程，不再忘記帶課本。" 
-                    icon={CalendarRange} 
-                    color="bg-amber-50 text-amber-600"
-                    onClick={() => setActiveTool('schedule')}
-                />
+            {/* Tool Content */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 overscroll-none scroll-smooth">
+                <div className="max-w-3xl mx-auto min-h-full flex flex-col">
+                    {activeTool === 'calculator' && <KidCalculator />}
+                    {activeTool === 'allowance' && <AllowanceTracker />}
+                    {activeTool === 'schedule' && <ClassSchedule />}
+                </div>
             </div>
         </div>
-      ) : (
-        <div className="space-y-6">
-            <Button variant="ghost" onClick={() => setActiveTool(null)} className="pl-0 text-stone-500 hover:text-stone-800 hover:bg-transparent">
-                <ArrowLeft className="w-4 h-4 mr-2" /> 返回工具列表
-            </Button>
-            
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-stone-100 min-h-[500px]"
-            >
-                {activeTool === 'calculator' && <KidCalculator />}
-                {activeTool === 'allowance' && <AllowanceTracker />}
-                {activeTool === 'schedule' && <ClassSchedule />}
-            </motion.div>
-        </div>
-      )}
+    );
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto py-8 space-y-8">
+      <div className="space-y-8">
+          <div className="text-center space-y-4">
+              <h2 className="text-3xl font-bold text-stone-800">萬能工具包</h2>
+              <p className="text-stone-500">
+                  選一個你需要的工具，開始練習管理自己的生活吧！
+              </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <ToolCard 
+                  title="快樂計算機" 
+                  description="色彩繽紛的大按鈕，幫你算算術！" 
+                  icon={Calculator} 
+                  color="bg-blue-50 text-blue-600"
+                  onClick={() => setActiveTool('calculator')}
+              />
+              <ToolCard 
+                  title="零用錢小帳本" 
+                  description="記下每一筆收入與支出，成為理財小達人。" 
+                  icon={PiggyBank} 
+                  color="bg-pink-50 text-pink-600"
+                  onClick={() => setActiveTool('allowance')}
+              />
+              <ToolCard 
+                  title="我的課表" 
+                  description="清楚記錄每天的課程，不再忘記帶課本。" 
+                  icon={CalendarRange} 
+                  color="bg-amber-50 text-amber-600"
+                  onClick={() => setActiveTool('schedule')}
+              />
+          </div>
+      </div>
     </div>
   );
 }
@@ -153,26 +193,20 @@ function KidCalculator() {
     ];
 
     return (
-        <div className="max-w-xs mx-auto space-y-6">
-            <div className="text-center space-y-2 mb-8">
-                <h3 className="text-2xl font-bold text-blue-600 flex items-center justify-center gap-2">
-                    <Calculator className="w-6 h-6" /> 快樂計算機
-                </h3>
-            </div>
-            
-            <div className="bg-stone-900 p-6 rounded-3xl shadow-xl border-4 border-stone-800">
-                <div className="bg-[#D4D4D2] h-24 mb-6 rounded-xl flex flex-col items-end justify-center px-4 font-mono">
-                    <div className="text-stone-500 text-sm h-6">{equation}</div>
-                    <div className="text-4xl text-stone-800 font-bold tracking-widest overflow-hidden w-full text-right">{display}</div>
+        <div className="max-w-xs mx-auto w-full h-full flex flex-col justify-center py-4">
+            <div className="bg-stone-900 p-4 rounded-3xl shadow-xl border-4 border-stone-800">
+                <div className="bg-[#D4D4D2] h-20 mb-4 rounded-xl flex flex-col items-end justify-center px-4 font-mono">
+                    <div className="text-stone-500 text-xs h-4">{equation}</div>
+                    <div className="text-3xl text-stone-800 font-bold tracking-widest overflow-hidden w-full text-right">{display}</div>
                 </div>
                 
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-4 gap-2">
                     {buttons.map(btn => (
                         <button
                             key={btn}
                             onClick={() => handlePress(btn)}
                             className={`
-                                h-16 rounded-full text-2xl font-bold shadow-[0_4px_0_0_rgba(0,0,0,0.2)] active:translate-y-[2px] active:shadow-none transition-all
+                                aspect-square rounded-full text-xl md:text-2xl font-bold shadow-[0_3px_0_0_rgba(0,0,0,0.2)] active:translate-y-[2px] active:shadow-none transition-all touch-none select-none flex items-center justify-center
                                 ${btn === 'C' ? 'bg-red-400 text-white hover:bg-red-500' : ''}
                                 ${btn === '=' ? 'bg-emerald-500 text-white hover:bg-emerald-600' : ''}
                                 ${['+', '-', '*', '/'].includes(btn) ? 'bg-amber-400 text-white hover:bg-amber-500' : ''}
@@ -189,30 +223,75 @@ function KidCalculator() {
 }
 
 function AllowanceTracker() {
-    const [items, setItems] = useState<{id: number, icon: string, amount: number, type: 'income' | 'expense', date: string}[]>([]);
+    const { session } = useAuth();
+    const [items, setItems] = useState<{id: string, icon: string, amount: number, type: 'income' | 'expense', date: string}[]>([]);
     const [selectedEmoji, setSelectedEmoji] = useState<string>('🍭');
     const [amount, setAmount] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     const emojis = [
         '🧧', '💰', '🍭', '🍦', '🧸', '📚', '✏️', '🎮', 
         '🧹', '🎁', '🌟', '👵', '🍔', '🚌'
     ];
 
+    useEffect(() => {
+        if (session?.access_token) {
+            fetchRecords();
+        }
+    }, [session]);
+
+    const fetchRecords = async () => {
+        try {
+            const res = await fetch(`${SERVER_URL}/allowance/records`, {
+                headers: { Authorization: `Bearer ${session?.access_token}` }
+            });
+            const data = await res.json();
+            if (data.records) {
+                setItems(data.records);
+            }
+        } catch (error) {
+            console.error('Failed to fetch records', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const syncRecords = async (newRecords: typeof items) => {
+        try {
+            await fetch(`${SERVER_URL}/allowance/records`, {
+                method: 'POST',
+                headers: { 
+                    Authorization: `Bearer ${session?.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ records: newRecords })
+            });
+        } catch (error) {
+            console.error('Failed to sync records', error);
+            toast.error('儲存失敗，請檢查網路');
+        }
+    };
+
     const handleAdd = (type: 'income' | 'expense') => {
         if (!amount) return;
-        setItems([...items, {
-            id: Date.now(),
+        const newItem = {
+            id: Date.now().toString(),
             icon: selectedEmoji,
             amount: parseInt(amount),
             type,
             date: new Date().toLocaleDateString()
-        }]);
+        };
+        const newRecords = [...items, newItem];
+        setItems(newRecords);
         setAmount('');
+        syncRecords(newRecords);
         toast.success(type === 'income' ? '存進去囉！' : '花掉囉！');
     };
 
-    const handleDelete = (id: number) => {
-        setItems(items.filter(i => i.id !== id));
+    const handleDelete = (id: string) => {
+        const newRecords = items.filter(i => i.id !== id);
+        setItems(newRecords);
+        syncRecords(newRecords);
     };
 
     const totalIncome = items.filter(i => i.type === 'income').reduce((acc, cur) => acc + cur.amount, 0);
@@ -220,13 +299,7 @@ function AllowanceTracker() {
     const balance = totalIncome - totalExpense;
 
     return (
-        <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-pink-600 flex items-center justify-center gap-2">
-                    <PiggyBank className="w-6 h-6" /> 零用錢小帳本
-                </h3>
-            </div>
-
+        <div className="max-w-2xl mx-auto pb-10">
             {/* Balance Card */}
             <div className="bg-gradient-to-br from-yellow-300 to-amber-400 rounded-3xl p-6 text-center text-white shadow-lg mb-8 relative overflow-hidden">
                 <div className="relative z-10">
@@ -241,7 +314,7 @@ function AllowanceTracker() {
             </div>
 
             {/* Input Area */}
-            <div className="bg-stone-50 p-6 rounded-3xl mb-8 space-y-6">
+            <div className="bg-white p-6 rounded-3xl mb-8 space-y-6 shadow-sm border border-stone-100">
                 {/* 1. Pick Emoji */}
                 <div className="space-y-3">
                     <Label className="text-center block text-stone-500 text-xs">這是什麼？</Label>
@@ -250,7 +323,7 @@ function AllowanceTracker() {
                             <button
                                 key={emoji}
                                 onClick={() => setSelectedEmoji(emoji)}
-                                className={`w-12 h-12 text-3xl rounded-xl transition-all ${selectedEmoji === emoji ? 'bg-white shadow-md scale-110 border-2 border-emerald-400' : 'bg-white/50 hover:bg-white hover:scale-105'}`}
+                                className={`w-12 h-12 text-3xl rounded-xl transition-all ${selectedEmoji === emoji ? 'bg-white shadow-md scale-110 border-2 border-emerald-400' : 'bg-stone-50 hover:bg-white hover:scale-105'}`}
                             >
                                 {emoji}
                             </button>
@@ -265,7 +338,7 @@ function AllowanceTracker() {
                          <Input 
                             type="number" 
                             placeholder="$" 
-                            className="text-center text-2xl font-bold h-14 rounded-2xl bg-white border-stone-200"
+                            className="text-center text-2xl font-bold h-14 rounded-2xl bg-stone-50 border-stone-200"
                             value={amount} 
                             onChange={e => setAmount(e.target.value)} 
                         />
@@ -289,7 +362,9 @@ function AllowanceTracker() {
 
             {/* History List */}
             <div className="space-y-3">
-                {items.length === 0 ? (
+                {isLoading ? (
+                    <div className="text-center py-8 text-stone-300">載入中...</div>
+                ) : items.length === 0 ? (
                     <div className="text-center py-8 text-stone-300">
                         <PiggyBank className="w-12 h-12 mx-auto mb-2 opacity-50" />
                         <p>還沒有紀錄喔！</p>
@@ -331,28 +406,50 @@ function ClassSchedule() {
         { id: 8, time: '16:00' },
     ];
 
+    const subjectEmojis = [
+        { emoji: '📖', name: '國語' },
+        { emoji: '📐', name: '數學' },
+        { emoji: '🅰️', name: '英文' },
+        { emoji: '🌿', name: '自然' },
+        { emoji: '🌏', name: '社會' },
+        { emoji: '🎵', name: '音樂' },
+        { emoji: '🏀', name: '體育' },
+        { emoji: '🎨', name: '美術' },
+        { emoji: '💻', name: '電腦' },
+        { emoji: '🧩', name: '綜合' },
+        { emoji: '📚', name: '閱讀' },
+        { emoji: '🍱', name: '午休' },
+        { emoji: '🧹', name: '打掃' },
+        { emoji: '💤', name: '休息' },
+    ];
+
     // Simple state for demo. In real app, sync with DB.
     const [schedule, setSchedule] = useState<Record<string, string>>({});
+    const [selectedCell, setSelectedCell] = useState<{day: string, periodId: string | number} | null>(null);
 
     const handleCellClick = (day: string, periodId: string | number) => {
-        const key = `${day}-${periodId}`;
-        const current = schedule[key] || '';
-        const input = prompt('請輸入課程名稱：', current);
-        if (input !== null) {
-            setSchedule(prev => ({ ...prev, [key]: input }));
-        }
+        setSelectedCell({ day, periodId });
+    };
+
+    const handleSelectSubject = (emoji: string) => {
+        if (!selectedCell) return;
+        const key = `${selectedCell.day}-${selectedCell.periodId}`;
+        setSchedule(prev => ({ ...prev, [key]: emoji }));
+        setSelectedCell(null);
+    };
+
+    const handleClearCell = () => {
+        if (!selectedCell) return;
+        const key = `${selectedCell.day}-${selectedCell.periodId}`;
+        const newSchedule = { ...schedule };
+        delete newSchedule[key];
+        setSchedule(newSchedule);
+        setSelectedCell(null);
     };
 
     return (
-        <div className="max-w-4xl mx-auto overflow-x-auto">
-             <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-amber-600 flex items-center justify-center gap-2">
-                    <CalendarRange className="w-6 h-6" /> 我的課表
-                </h3>
-                <p className="text-xs text-stone-400 mt-2">點擊格子可以編輯課程喔！</p>
-            </div>
-
-            <div className="min-w-[600px] border border-stone-200 rounded-xl overflow-hidden">
+        <div className="max-w-4xl mx-auto overflow-x-auto pb-10">
+            <div className="min-w-[600px] border border-stone-200 rounded-xl overflow-hidden shadow-sm bg-white">
                 <div className="grid grid-cols-6 bg-stone-50 border-b border-stone-200">
                     <div className="p-3 text-center text-sm font-bold text-stone-500 border-r border-stone-200">時間</div>
                     {days.map(day => (
@@ -378,10 +475,10 @@ function ClassSchedule() {
                                     <div 
                                         key={day} 
                                         onClick={() => handleCellClick(day, period.id)}
-                                        className="p-2 border-r border-stone-100 last:border-r-0 min-h-[60px] cursor-pointer hover:bg-white transition-colors flex items-center justify-center text-center relative group"
+                                        className="p-2 border-r border-stone-100 last:border-r-0 min-h-[60px] cursor-pointer hover:bg-amber-50 transition-colors flex items-center justify-center text-center relative group"
                                     >
                                         {val ? (
-                                            <span className="font-bold text-stone-700 text-sm bg-amber-100/50 px-2 py-1 rounded-md w-full block">
+                                            <span className="text-3xl filter drop-shadow-sm transition-transform group-hover:scale-110">
                                                 {val}
                                             </span>
                                         ) : (
@@ -394,6 +491,34 @@ function ClassSchedule() {
                     </div>
                 ))}
             </div>
+
+            <Dialog open={!!selectedCell} onOpenChange={(open) => !open && setSelectedCell(null)}>
+                <DialogContent className="sm:max-w-sm rounded-3xl">
+                    <DialogHeader>
+                        <DialogTitle className="text-center text-xl">選擇課程</DialogTitle>
+                        <DialogDescription className="text-center text-stone-500 text-sm">
+                            請選擇一個代表課程的圖案
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-4 gap-4 py-4">
+                        {subjectEmojis.map(subject => (
+                            <button
+                                key={subject.name}
+                                onClick={() => handleSelectSubject(subject.emoji)}
+                                className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl hover:bg-stone-50 transition-colors"
+                            >
+                                <span className="text-4xl">{subject.emoji}</span>
+                                <span className="text-xs text-stone-500">{subject.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex justify-center border-t border-stone-100 pt-4 mt-2">
+                        <Button variant="ghost" className="text-red-400 hover:text-red-500 hover:bg-red-50" onClick={handleClearCell}>
+                            <Trash2 className="w-4 h-4 mr-2" /> 清除格子
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

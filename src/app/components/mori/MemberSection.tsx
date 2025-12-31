@@ -884,9 +884,6 @@ export function MemberSection() {
                         </div>
                     </div>
                     <DialogFooter className="p-6 pt-2 bg-white flex gap-2">
-                        <Button type="button" variant="outline" onClick={() => setShowPasswordDialog(false)} className="rounded-xl flex-1">
-                            取消
-                        </Button>
                         <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 flex-1" disabled={isVerifying || !verifyPassword}>
                             {isVerifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
                             驗證解鎖

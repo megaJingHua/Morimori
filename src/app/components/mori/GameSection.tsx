@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Clock, User, Check, RefreshCw, Star, Trophy, Moon, Home, Hourglass, Sparkles } from 'lucide-react';
+import { ArrowLeft, Clock, User, Check, RefreshCw, Star, Trophy, Moon, Home, Hourglass, Sparkles, Lightbulb } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { useGameTime } from '../../context/GameTimeContext';
-import forestMatchingImageFigma from 'figma:asset/547c0c08904dbc199c976f126cb140b91d0d3e42.png';
-
-// Helper to switch between Figma asset (preview) and GitHub Pages asset (production)
-const getAssetPath = (figmaAsset: string, githubFilename: string) => {
-    if (typeof window !== 'undefined' && window.location.pathname.includes('/Morimori/')) {
-        return `/Morimori/assets/${githubFilename}`;
-    }
-    return figmaAsset;
-};
+const gameBg = '/Morimori/assets/forest-game-bg.png';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 
 // Game Types
 interface Game {
@@ -34,7 +34,7 @@ const GAMES: Game[] = [
     description: '找出相同的動物好朋友！訓練記憶力與專注力。',
     age: '3-5 歲',
     time: '5-10 分',
-    image: getAssetPath(forestMatchingImageFigma, 'forest-matching.png'),
+    image: '/Morimori/assets/forest-matching.png',
     color: 'bg-emerald-100 text-emerald-800'
   },
   {
@@ -156,12 +156,29 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   const startTimeRef = useRef(Date.now());
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Lock body scroll and prevent touch gestures to improve mobile experience
   useEffect(() => {
-    startTimer();
+    // Save original styles
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+
+    // Apply lock
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
     return () => {
+        // Restore styles
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+        
         stopTimer();
         if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    startTimer();
+    // Cleanup handled in main useEffect
   }, []);
 
   useEffect(() => {
@@ -192,7 +209,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
 
   if (isTimeUp) {
       return (
-          <div className="fixed inset-0 z-50 bg-stone-900/95 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] bg-stone-900/95 backdrop-blur-sm flex items-center justify-center p-4">
               <motion.div 
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -300,67 +317,96 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 text-center">
-      <FloatingTimer />
-      <div className="flex justify-between items-center mb-8">
-        <Button variant="ghost" onClick={onExit} className="text-stone-500">
-          <ArrowLeft className="w-4 h-4 mr-2" /> 離開遊戲
+    <div 
+        className="fixed inset-0 z-50 bg-stone-50 flex flex-col select-none overflow-hidden touch-none bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${gameBg})` }}
+    >
+      {/* Header */}
+      <div className="flex-none px-4 py-3 bg-white/90 backdrop-blur-md shadow-sm flex justify-between items-center z-20">
+        <Button variant="ghost" onClick={onExit} className="text-stone-500 hover:bg-stone-100 -ml-2">
+          <ArrowLeft className="w-5 h-5 mr-1" /> 離開
         </Button>
-        <div className="flex gap-4">
-             <Badge variant="outline" className="px-4 py-2 text-lg bg-white border-stone-200 font-mono">
-                <Clock className="w-4 h-4 mr-2 text-stone-400" />
+        <div className="flex gap-2">
+             <Badge variant="outline" className="px-3 py-1.5 text-base bg-white border-stone-200 font-mono shadow-sm">
+                <Clock className="w-4 h-4 mr-1.5 text-stone-400" />
                 {formatTime(elapsedTime)}
              </Badge>
-             <Badge variant="outline" className="px-4 py-2 text-lg bg-white border-stone-200">
+             <Badge variant="outline" className="px-3 py-1.5 text-base bg-white border-stone-200 shadow-sm">
                 步數: {moves}
              </Badge>
-             <Button variant="outline" size="icon" onClick={shuffleCards} className="rounded-full" title="重新開始">
+             <Button variant="outline" size="icon" onClick={shuffleCards} className="rounded-full w-9 h-9" title="重新開始">
                 <RefreshCw className="w-4 h-4" />
              </Button>
         </div>
       </div>
 
-      <div className="bg-emerald-50/50 rounded-3xl p-8 shadow-inner min-h-[500px] flex flex-col justify-center">
+      {/* Main Game Area */}
+      <div className="flex-1 w-full flex flex-col items-center justify-center p-4 overflow-hidden relative">
          {!isWon ? (
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 max-w-2xl mx-auto w-full">
-                {cards.map(card => (
-                <div 
-                    key={card.id}
-                    className="aspect-square cursor-pointer [perspective:1000px]"
-                    onClick={() => handleCardClick(card.id)}
-                >
-                    <motion.div
-                        className="relative w-full h-full text-center transition-all [transform-style:preserve-3d]"
-                        animate={{ rotateY: card.isFlipped ? 180 : 0 }}
-                        transition={{ duration: 0.3 }} // Faster flip
+            <div className="w-full h-full max-w-md max-h-[80vh] flex flex-col justify-center">
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-3 w-full aspect-[3/4] md:aspect-square">
+                    {cards.map(card => (
+                    <div 
+                        key={card.id}
+                        className="relative w-full h-full cursor-pointer [perspective:1000px]"
+                        onClick={() => handleCardClick(card.id)}
                     >
-                        {/* Front (Hidden) */}
-                        <div 
-                            className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-sm flex items-center justify-center text-4xl bg-white border-2 border-emerald-100"
+                        <motion.div
+                            className="w-full h-full transition-all [transform-style:preserve-3d]"
+                            animate={{ rotateY: card.isFlipped ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
                         >
-                            <span className="opacity-50 text-emerald-200 text-6xl">?</span>
-                        </div>
-                        
-                        {/* Back (Revealed) */}
-                        <div 
-                            className={`absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-md flex items-center justify-center overflow-hidden border-4
-                            ${card.isMatched ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-emerald-400'}
-                            `}
-                            style={{ transform: "rotateY(180deg)" }}
-                        >
-                            <span className="text-6xl select-none" role="img" aria-label="animal">
-                                {ANIMAL_EMOJIS[card.animalIndex]}
-                            </span>
-                        </div>
-                    </motion.div>
+                            {/* Front (Hidden) */}
+                            <div 
+                                className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-xl shadow-sm flex items-center justify-center bg-white border-2 border-emerald-100"
+                            >
+                                <span className="opacity-40 text-emerald-200 text-4xl md:text-5xl font-bold">?</span>
+                            </div>
+                            
+                            {/* Back (Revealed) */}
+                            <div 
+                                className={`absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-xl shadow-md flex items-center justify-center overflow-hidden border-4
+                                ${card.isMatched ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-emerald-400'}
+                                `}
+                                style={{ transform: "rotateY(180deg)" }}
+                            >
+                                <span className="text-4xl md:text-5xl select-none" role="img" aria-label="animal">
+                                    {ANIMAL_EMOJIS[card.animalIndex]}
+                                </span>
+                            </div>
+                        </motion.div>
+                    </div>
+                    ))}
                 </div>
-                ))}
+                
+                {/* Advice Tip Trigger - Only visible during game */}
+                <div className="mt-4 flex justify-center">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                             <Button variant="ghost" size="sm" className="text-stone-400 hover:text-stone-600 gap-1 rounded-full text-xs">
+                                <Lightbulb className="w-3 h-3" />
+                                爸媽陪玩小撇步
+                             </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-sm rounded-2xl">
+                             <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    <User className="w-5 h-5 text-orange-400" />
+                                    給爸媽的陪玩建議
+                                </DialogTitle>
+                                <DialogDescription className="pt-2 text-stone-600 leading-relaxed">
+                                    這不只是記憶遊戲。試著問孩子：「這是什麼動物？」「獅子怎麼叫？」增加語言互動，比輸贏更重要喔。
+                                </DialogDescription>
+                             </DialogHeader>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </div>
          ) : (
              <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="text-center space-y-6 relative"
+                className="text-center space-y-6 relative max-w-sm mx-auto bg-white/80 p-8 rounded-3xl shadow-xl backdrop-blur-sm"
              >
                  {/* Celebration Particles */}
                  {Array.from({ length: 20 }).map((_, i) => (
@@ -375,7 +421,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
                             rotate: Math.random() * 360
                         }}
                         transition={{ duration: 2, ease: "easeOut", repeat: Infinity, repeatDelay: 1 }}
-                        className="absolute top-1/2 left-1/2 w-3 h-3 rounded-full"
+                        className="absolute top-1/2 left-1/2 w-3 h-3 rounded-full pointer-events-none"
                         style={{ backgroundColor: ['#FFD700', '#FF6347', '#40E0D0', '#FF69B4', '#10B981'][Math.floor(Math.random() * 5)] }}
                     />
                  ))}
@@ -391,33 +437,27 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
                     </motion.div>
                  </div>
                  
-                 <div className="relative z-10">
-                    <h2 className="text-4xl font-bold text-stone-800 mb-2">太棒了！挑戰成功！</h2>
-                    <div className="flex justify-center gap-4 text-stone-500 mb-4 font-mono text-lg">
-                        <span className="flex items-center gap-1"><Clock className="w-5 h-5"/> {formatTime(elapsedTime)}</span>
-                        <span>|</span>
+                 <div className="relative z-10 space-y-4">
+                    <h2 className="text-3xl font-bold text-stone-800">太棒了！挑戰成功！</h2>
+                    <div className="flex justify-center gap-4 text-stone-500 font-mono text-lg bg-stone-50 py-2 rounded-xl">
+                        <span className="flex items-center gap-1"><Clock className="w-5 h-5 text-stone-400"/> {formatTime(elapsedTime)}</span>
+                        <span className="text-stone-300">|</span>
                         <span>{moves} 步</span>
                     </div>
-                    <p className="text-xl text-stone-500">現在，轉身給爸爸媽媽一個大大的擊掌！✋</p>
+                    <div className="bg-orange-50 p-4 rounded-xl text-left text-sm text-stone-600 flex gap-3">
+                         <div className="bg-white p-1.5 rounded-full shrink-0 h-fit">
+                             <User className="w-4 h-4 text-orange-400" />
+                         </div>
+                         <p>試著問孩子：「這是什麼動物？」「獅子怎麼叫？」增加語言互動，比輸贏更重要喔。</p>
+                    </div>
+                    <p className="text-lg text-emerald-600 font-medium pt-2">現在，給爸媽一個大大的擊掌！✋</p>
                  </div>
 
-                 <Button onClick={shuffleCards} size="lg" className="relative z-10 rounded-full bg-emerald-600 hover:bg-emerald-700 text-lg px-8 py-6 mt-8 shadow-xl shadow-emerald-200">
+                 <Button onClick={shuffleCards} size="lg" className="relative z-10 rounded-full bg-emerald-600 hover:bg-emerald-700 text-lg px-8 py-6 w-full shadow-lg shadow-emerald-200">
                     <RefreshCw className="w-5 h-5 mr-2" /> 再玩一次
                  </Button>
              </motion.div>
          )}
-      </div>
-
-      <div className="mt-8 bg-orange-50 p-6 rounded-2xl flex items-start gap-4 text-left max-w-2xl mx-auto">
-        <div className="bg-white p-2 rounded-full shrink-0">
-            <User className="w-6 h-6 text-orange-400" />
-        </div>
-        <div>
-            <h4 className="font-bold text-stone-800 mb-1">給爸媽的陪玩建議</h4>
-            <p className="text-sm text-stone-600">
-                這不只是記憶遊戲。試著問孩子：「這是什麼動物？」「獅子怎麼叫？」增加語言互動，比輸贏更重要喔。
-            </p>
-        </div>
       </div>
     </div>
   );

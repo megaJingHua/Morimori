@@ -484,4 +484,56 @@ app.get("/make-server-92f3175c/settings", async (c) => {
   }
 });
 
+// Get Allowance Records
+app.get("/make-server-92f3175c/allowance/records", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const key = `allowance_records_${user.id}`;
+  try {
+      const recordsRaw = await kv.get(key);
+      let records = [];
+      if (typeof recordsRaw === 'string') {
+          try { records = JSON.parse(recordsRaw); } catch {}
+      } else if (Array.isArray(recordsRaw)) {
+          records = recordsRaw;
+      }
+      return c.json({ records });
+  } catch (error) {
+      console.error("Error fetching allowance records:", error);
+      return c.json({ error: "Failed to fetch records" }, 500);
+  }
+});
+
+// Update Allowance Records (Sync)
+app.post("/make-server-92f3175c/allowance/records", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const { records } = await c.req.json();
+  const key = `allowance_records_${user.id}`;
+  
+  try {
+      await kv.set(key, JSON.stringify(records));
+      return c.json({ success: true });
+  } catch (error) {
+      console.error("Error saving allowance records:", error);
+      return c.json({ error: "Failed to save records" }, 500);
+  }
+});
+
 Deno.serve(app.fetch);
