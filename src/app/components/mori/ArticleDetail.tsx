@@ -71,7 +71,7 @@ export function ArticleDetail({
             </div>
         </div>
 
-        <div className="p-8 md:p-12 space-y-8">
+        <div className="p-5 md:p-12 space-y-8">
             {/* Meta Info */}
             <div className="space-y-4 text-center">
                 <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-200 px-3 py-1 text-sm">

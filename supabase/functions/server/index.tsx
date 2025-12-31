@@ -536,4 +536,109 @@ app.post("/make-server-92f3175c/allowance/records", async (c) => {
   }
 });
 
+// Get Class Schedule & Periods
+app.get("/make-server-92f3175c/schedule", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const key = `schedule_data_${user.id}`;
+  try {
+      const dataRaw = await kv.get(key);
+      let data = { schedule: {}, periods: [] };
+      if (typeof dataRaw === 'string') {
+          try { data = JSON.parse(dataRaw); } catch {}
+      } else if (typeof dataRaw === 'object' && dataRaw !== null) {
+          // @ts-ignore
+          data = dataRaw;
+      }
+      return c.json(data);
+  } catch (error) {
+      console.error("Error fetching schedule:", error);
+      return c.json({ error: "Failed to fetch schedule" }, 500);
+  }
+});
+
+// Save Class Schedule & Periods
+app.post("/make-server-92f3175c/schedule", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const { schedule, periods } = await c.req.json();
+  const key = `schedule_data_${user.id}`;
+  
+  try {
+      await kv.set(key, JSON.stringify({ schedule, periods }));
+      return c.json({ success: true });
+  } catch (error) {
+      console.error("Error saving schedule:", error);
+      return c.json({ error: "Failed to save schedule" }, 500);
+  }
+});
+
+// Get Calendar Events
+app.get("/make-server-92f3175c/calendar/events", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const key = `calendar_events_${user.id}`;
+  try {
+      const eventsRaw = await kv.get(key);
+      let events = [];
+      if (typeof eventsRaw === 'string') {
+          try { events = JSON.parse(eventsRaw); } catch {}
+      } else if (Array.isArray(eventsRaw)) {
+          events = eventsRaw;
+      }
+      return c.json({ events });
+  } catch (error) {
+      console.error("Error fetching calendar events:", error);
+      return c.json({ error: "Failed to fetch events" }, 500);
+  }
+});
+
+// Save Calendar Events
+app.post("/make-server-92f3175c/calendar/events", async (c) => {
+  const accessToken = getAccessToken(c);
+  if (!accessToken) return c.json({ error: "Unauthorized: Missing token" }, 401);
+
+  const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user) {
+      return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const { events } = await c.req.json();
+  const key = `calendar_events_${user.id}`;
+  
+  try {
+      await kv.set(key, JSON.stringify(events));
+      return c.json({ success: true });
+  } catch (error) {
+      console.error("Error saving calendar events:", error);
+      return c.json({ error: "Failed to save events" }, 500);
+  }
+});
+
 Deno.serve(app.fetch);

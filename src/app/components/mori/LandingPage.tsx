@@ -12,6 +12,7 @@ import {
   Heart,
   Sparkles,
   User,
+  Loader2, // Import Loader2
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -67,7 +68,7 @@ export function LandingPage({ setView }: LandingPageProps) {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
   };
-
+  
   return (
     <div className="space-y-16 py-8">
       {/* Hero Section */}
@@ -116,7 +117,7 @@ export function LandingPage({ setView }: LandingPageProps) {
             這裡沒有完美的教養SOP，只有被理解的溫暖、好玩的親子遊戲，還有一點點工程師媽媽的邏輯
           </motion.p>
 
-          {visitCount !== null && (
+          {visitCount !== null ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -125,14 +126,26 @@ export function LandingPage({ setView }: LandingPageProps) {
             >
               <div className="flex items-center gap-2 bg-white/60 md:bg-white/40 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-white/50 shadow-sm hover:bg-white/50 transition-colors cursor-default">
                 <User className="w-3 h-3 md:w-4 md:h-4 text-emerald-700" />
-                <span className="text-xs md:text-sm text-emerald-900 font-medium">
-                  已有{" "}
-                  <span className="font-bold text-emerald-700">
+                <span className="text-xs md:text-sm text-emerald-900 font-medium flex items-center gap-1">
+                  已有
+                  <span className="font-bold text-emerald-700 min-w-[20px] text-center">
                     {visitCount.toLocaleString()}
-                  </span>{" "}
+                  </span>
                   位家長造訪
                 </span>
               </div>
+            </motion.div>
+          ) : (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="flex items-center justify-center gap-2 pt-2 md:pt-4"
+            >
+                <div className="flex items-center gap-2 bg-white/60 md:bg-white/40 backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-white/50 shadow-sm">
+                   <Loader2 className="w-3 h-3 md:w-4 md:h-4 text-emerald-500 animate-spin" />
+                   <span className="text-xs md:text-sm text-stone-500 font-medium">讀取中...</span>
+                </div>
             </motion.div>
           )}
         </div>

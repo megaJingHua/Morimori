@@ -287,7 +287,14 @@ export function MemberSection() {
         if (error) throw error;
         toast.success('登入成功！');
     } catch (error: any) {
-        toast.error(`登入失敗: ${error.message}`);
+        console.error("Login error:", error);
+        if (error.message === "Invalid login credentials") {
+            toast.error("帳號或密碼錯誤，請再試一次");
+        } else if (error.message.includes("Email not confirmed")) {
+            toast.error("信箱尚未驗證，請檢查您的信箱");
+        } else {
+            toast.error(`登入失敗: ${error.message}`);
+        }
     } finally {
         setIsLoggingIn(false);
     }
@@ -672,15 +679,19 @@ export function MemberSection() {
                                 </div>
                             ) : collectedArticles.length > 0 ? (
                                 <div className="grid grid-cols-1 gap-4">
-                                    {collectedArticles.map(article => (
+                                    {collectedArticles.map(article => {
+                                        const isTechArticle = ALL_TECH_ARTICLES.some(t => t.id === article.id);
+                                        return (
                                         <div 
                                             key={article.id} 
                                             className="group flex gap-5 p-4 rounded-3xl bg-white border border-stone-100 hover:border-emerald-100 hover:shadow-lg hover:shadow-emerald-100/50 transition-all cursor-pointer" 
                                             onClick={() => setSelectedArticleId(article.id)}
                                         >
-                                            <div className="w-28 h-28 shrink-0 rounded-2xl overflow-hidden relative shadow-inner">
-                                                <ImageWithFallback src={article.image} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                            </div>
+                                            {!isTechArticle && (
+                                                <div className="w-28 h-28 shrink-0 rounded-2xl overflow-hidden relative shadow-inner">
+                                                    <ImageWithFallback src={article.image} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                </div>
+                                            )}
                                             <div className="flex flex-col justify-center py-1 flex-1">
                                                 <div className="mb-auto">
                                                     <Badge variant="secondary" className="mb-2 text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100">{article.category}</Badge>
@@ -697,7 +708,7 @@ export function MemberSection() {
                                                 </div>
                                             </div>
                                         </div>
-                                    ))}
+                                    )})}
                                 </div>
                             ) : (
                                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-stone-200">
@@ -848,7 +859,7 @@ export function MemberSection() {
                                         <Gamepad2 className="w-8 h-8 text-stone-300" />
                                     </div>
                                     <h3 className="text-xl font-bold text-stone-600">還沒有遊玩紀錄</h3>
-                                    <p className="text-stone-400 mt-2">帶孩子去「親子遊戲區」玩一玩，紀錄就會出現在這裡喔！</p>
+                                    <p className="text-stone-400 mt-2">帶孩子去「親子遊戲區」玩一玩，紀錄就���出現在這裡喔！</p>
                                 </div>
                            )}
                         </motion.div>

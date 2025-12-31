@@ -6,6 +6,8 @@ import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { useGameTime } from '../../context/GameTimeContext';
+import { useAuth } from '../../context/AuthContext';
+import { MathGarden } from './MathGarden';
 const gameBg = '/Morimori/assets/forest-game-bg.png';
 import {
   Dialog,
@@ -38,18 +40,22 @@ const GAMES: Game[] = [
     color: 'bg-emerald-100 text-emerald-800'
   },
   {
-    id: 'sorting',
-    title: '顏色分類家 (即將推出)',
-    description: '幫助小松鼠把果實分類。',
-    age: '3-4 歲',
-    time: '5 分',
-    image: 'https://images.unsplash.com/photo-1659184619594-ef7e655b843e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwYXJlbnQlMjBhbmQlMjBjaGlsZCUyMHJlYWRpbmclMjBib29rJTIwaGFwcHklMjB3YXJtfGVufDF8fHx8MTc2NjcxOTYzOXww&ixlib=rb-4.1.0&q=80&w=1080',
-    color: 'bg-orange-100 text-orange-800'
+    id: 'math',
+    title: '森森數學園',
+    description: '數數看有幾顆蘋果？用可愛圖案學加減法。',
+    age: '4-6 歲',
+    time: '5-15 分',
+    image: '/Morimori/assets/math-garden-cover.png',
+    color: 'bg-indigo-100 text-indigo-800'
   }
 ];
 
 function FloatingTimer() {
+  const { user } = useAuth();
   const { dailyLimit, timeUsed, isPlaying } = useGameTime();
+
+  if (!user) return null;
+
   const remainingSeconds = Math.max(0, dailyLimit * 60 - timeUsed);
   const minutes = Math.floor(remainingSeconds / 60);
   const seconds = remainingSeconds % 60;
@@ -75,6 +81,10 @@ export function GameSection() {
 
   if (activeGame === 'matching') {
     return <MatchingGame onExit={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === 'math') {
+    return <MathGarden onExit={() => setActiveGame(null)} />;
   }
 
   return (
