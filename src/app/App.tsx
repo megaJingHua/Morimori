@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { AuthProvider, supabase } from './context/AuthContext';
 import { GameTimeProvider } from './context/GameTimeContext';
 import { Layout } from './components/mori/Layout';
 import { LandingPage } from './components/mori/LandingPage';
@@ -11,6 +11,19 @@ import { ToolkitSection } from './components/mori/ToolkitSection';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
+  const [pendingResetPassword, setPendingResetPassword] = useState(false);
+
+  useEffect(() => {
+    // Listen for password recovery event at the top level to redirect to member section
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPendingResetPassword(true);
+        setCurrentView('member');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const renderView = () => {
     switch (currentView) {
@@ -25,7 +38,7 @@ export default function App() {
       case 'tech':
         return <TechSection />;
       case 'member':
-        return <MemberSection />;
+        return <MemberSection defaultShowResetPassword={pendingResetPassword} />;
       default:
         return <LandingPage setView={setCurrentView} />;
     }

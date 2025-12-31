@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, RefreshCw, Star, Delete, Check, Lightbulb, User, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
+import { Card } from '../ui/card';
 import {
     Dialog,
     DialogContent,

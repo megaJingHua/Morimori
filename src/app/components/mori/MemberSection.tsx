@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { User, Settings, Clock, Award, Star, Shield, Lock, Mail, Loader2, LogOut, Bookmark, Heart, Calendar, Eye, ArrowLeft, Gamepad2, Save, Edit2, Check, X, Unlock } from 'lucide-react';
+import { User, Settings, Clock, Award, Star, Shield, Lock, Mail, Loader2, LogOut, Bookmark, Heart, Calendar, Eye, EyeOff, ArrowLeft, Gamepad2, Save, Edit2, Check, X, Unlock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "../ui/table";
 
-export function MemberSection() {
+export function MemberSection({ defaultShowResetPassword = false }: { defaultShowResetPassword?: boolean }) {
   const { user, loading, signOut, session, supabase } = useAuth();
   const { dailyLimit, setDailyLimit, timeUsed, saveSettings } = useGameTime();
   const [authTab, setAuthTab] = useState('login');
@@ -69,15 +69,45 @@ export function MemberSection() {
   const [verifyPassword, setVerifyPassword] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Forgot Password State
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [isSendingReset, setIsSendingReset] = useState(false);
+
+  // Reset Password State (Logged In)
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(defaultShowResetPassword);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   // Combine all articles
   const allArticles = [...ARTICLES, ...ALL_TECH_ARTICLES];
+
+  useEffect(() => {
+    if (defaultShowResetPassword) {
+        setShowResetPasswordDialog(true);
+    }
+  }, [defaultShowResetPassword]);
 
   useEffect(() => {
     if (user) {
         setProfileName(user.user_metadata?.name || '');
         setProfileBirthday(user.user_metadata?.birthday || '');
     }
+
+    // Listen for password recovery event to auto-open reset dialog
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "PASSWORD_RECOVERY") {
+            setShowResetPasswordDialog(true);
+            toast.info("請設定您的新密碼");
+        }
+    });
+
+    return () => {
+        authListener.subscription.unsubscribe();
+    };
   }, [user]);
 
   useEffect(() => {
@@ -190,8 +220,12 @@ export function MemberSection() {
           setVerifyPassword('');
           toast.success("驗證成功，您可以調整設定了");
       } catch (error: any) {
-          console.error("Password verification failed:", error);
-          toast.error("密碼錯誤，請重試");
+          if (error.message === "Invalid login credentials") {
+              toast.error("密碼錯誤，請重試");
+          } else {
+              console.error("Password verification failed:", error);
+              toast.error("驗證失敗，請重試");
+          }
       } finally {
           setIsVerifying(false);
       }
@@ -279,21 +313,22 @@ export function MemberSection() {
     e.preventDefault();
     setIsLoggingIn(true);
     try {
-        const { supabase } = await import('../../context/AuthContext');
         const { error } = await supabase.auth.signInWithPassword({
-            email: loginEmail,
+            email: loginEmail.trim(),
             password: loginPassword,
         });
         if (error) throw error;
         toast.success('登入成功！');
     } catch (error: any) {
-        console.error("Login error:", error);
         if (error.message === "Invalid login credentials") {
-            toast.error("帳號或密碼錯誤，請再試一次");
-        } else if (error.message.includes("Email not confirmed")) {
-            toast.error("信箱尚未驗證，請檢查您的信箱");
+            toast.error("請確認帳號密碼，如忘記密碼請洽工程師媽媽 Mega!(目前還在慢慢完善網頁喲!)");
         } else {
-            toast.error(`登入失敗: ${error.message}`);
+            console.error("Login error:", error);
+            if (error.message.includes("Email not confirmed")) {
+                toast.error("信箱尚未驗證，請檢查您的信箱");
+            } else {
+                toast.error(`登入失敗: ${error.message}`);
+            }
         }
     } finally {
         setIsLoggingIn(false);
@@ -303,6 +338,12 @@ export function MemberSection() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSigningUp(true);
+
+    const email = signupEmail.trim();
+    const password = signupPassword;
+    const name = signupName.trim();
+    const birthday = signupBirthday;
+
     try {
         const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/signup`, {
             method: 'POST',
@@ -311,10 +352,10 @@ export function MemberSection() {
                 'Authorization': `Bearer ${publicAnonKey}`
             },
             body: JSON.stringify({
-                email: signupEmail,
-                password: signupPassword,
-                name: signupName,
-                birthday: signupBirthday
+                email,
+                password,
+                name,
+                birthday
             })
         });
         
@@ -323,11 +364,25 @@ export function MemberSection() {
             throw new Error(data.error || '註冊失敗');
         }
 
-        toast.success('註冊成功！請直接登入。');
-        setAuthTab('login');
-        setLoginEmail(signupEmail);
-        setLoginPassword(signupPassword);
+        toast.success('註冊成功！正在為您登入...');
+        
+        // Auto login after signup
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (loginError) {
+             console.error("Auto-login error:", loginError);
+             toast.info("註冊成功！請手動登入。");
+             setAuthTab('login');
+             setLoginEmail(email);
+             setLoginPassword(''); 
+             return;
+        }
+        
     } catch (error: any) {
+        console.error("Signup error:", error);
         toast.error(`註冊失敗: ${error.message}`);
     } finally {
         setIsSigningUp(false);
@@ -337,6 +392,53 @@ export function MemberSection() {
   const handleSignOut = async () => {
       await signOut();
       toast.info('已登出');
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!forgotEmail) return;
+      setIsSendingReset(true);
+      try {
+          // Use origin + pathname to ensure we redirect to the current page (e.g., /Morimori/)
+          const redirectUrl = window.location.origin + window.location.pathname;
+          
+          const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+              redirectTo: redirectUrl,
+          });
+          if (error) throw error;
+          toast.success("重設密碼信已發送，請檢查您的信箱");
+          setShowForgotPassword(false);
+          setAuthTab('login');
+      } catch (error: any) {
+          console.error("Forgot password error:", error);
+          toast.error(`發送失敗: ${error.message}`);
+      } finally {
+          setIsSendingReset(false);
+      }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (newPassword !== confirmNewPassword) {
+          toast.error("兩次密碼輸入不一致");
+          return;
+      }
+      setIsResettingPassword(true);
+      try {
+          const { error } = await supabase.auth.updateUser({
+              password: newPassword
+          });
+          if (error) throw error;
+          toast.success("密碼已更新");
+          setShowResetPasswordDialog(false);
+          setNewPassword('');
+          setConfirmNewPassword('');
+      } catch (error: any) {
+          console.error("Reset password error:", error);
+          toast.error(`更新失敗: ${error.message}`);
+      } finally {
+          setIsResettingPassword(false);
+      }
   };
 
   if (loading) {
@@ -359,111 +461,176 @@ export function MemberSection() {
             </div>
             
             <Card className="border-0 shadow-2xl shadow-stone-200 bg-white/80 backdrop-blur overflow-hidden rounded-3xl">
-                <CardHeader className="bg-stone-50/50 border-b border-stone-100/50 pb-0 pt-6">
-                    <Tabs value={authTab} onValueChange={setAuthTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 bg-stone-100/50 p-1 h-auto rounded-xl">
-                            <TabsTrigger 
-                                value="login" 
-                                className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm py-2"
-                            >
-                                登入
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="signup" 
-                                className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm py-2"
-                            >
-                                註冊
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    {authTab === 'login' ? (
-                        <form onSubmit={handleLogin} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input 
-                                    id="email" 
-                                    type="email" 
-                                    placeholder="name@example.com" 
-                                    value={loginEmail}
-                                    onChange={(e) => setLoginEmail(e.target.value)}
-                                    required
-                                    className="rounded-xl bg-stone-50 border-stone-200 focus:border-emerald-500 focus:ring-emerald-500 h-11"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="password">密碼</Label>
-                                <Input 
-                                    id="password" 
-                                    type="password" 
-                                    value={loginPassword}
-                                    onChange={(e) => setLoginPassword(e.target.value)}
-                                    required
-                                    className="rounded-xl bg-stone-50 border-stone-200 focus:border-emerald-500 focus:ring-emerald-500 h-11"
-                                />
-                            </div>
-                            <Button type="submit" className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-lg shadow-lg shadow-emerald-200" disabled={isLoggingIn}>
-                                {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-                               登入
-                            </Button>
-                        </form>
-                    ) : (
-                        <form onSubmit={handleSignup} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">暱稱 (如：寶哥媽媽)</Label>
-                                <Input 
-                                    id="name" 
-                                    placeholder="您的稱呼" 
-                                    value={signupName}
-                                    onChange={(e) => setSignupName(e.target.value)}
-                                    required
-                                    className="rounded-xl bg-stone-50 border-stone-200 h-10"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="birthday">生日 (用於計算生肖)</Label>
-                                <Input 
-                                    id="birthday" 
-                                    type="date"
-                                    value={signupBirthday}
-                                    onChange={(e) => setSignupBirthday(e.target.value)}
-                                    required
-                                    className="rounded-xl bg-stone-50 border-stone-200 h-10"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="signup-email">Email</Label>
-                                <Input 
-                                    id="signup-email" 
-                                    type="email" 
-                                    placeholder="name@example.com" 
-                                    value={signupEmail}
-                                    onChange={(e) => setSignupEmail(e.target.value)}
-                                    required
-                                    className="rounded-xl bg-stone-50 border-stone-200 h-10"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="signup-password">密碼</Label>
-                                <Input 
-                                    id="signup-password" 
-                                    type="password" 
-                                    placeholder="設定您的密碼"
-                                    value={signupPassword}
-                                    onChange={(e) => setSignupPassword(e.target.value)}
-                                    required
-                                    minLength={6}
-                                    className="rounded-xl bg-stone-50 border-stone-200 h-10"
-                                />
-                            </div>
-                            <Button type="submit" className="w-full h-11 rounded-xl bg-stone-800 hover:bg-stone-900 shadow-lg" disabled={isSigningUp}>
-                                {isSigningUp ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                                註冊帳號
-                            </Button>
-                        </form>
-                    )}
-                </CardContent>
+                {!showForgotPassword ? (
+                    <>
+                        <CardHeader className="bg-stone-50/50 border-b border-stone-100/50 pb-0 pt-6">
+                            <Tabs value={authTab} onValueChange={setAuthTab} className="w-full">
+                                <TabsList className="grid w-full grid-cols-2 bg-stone-100/50 p-1 h-auto rounded-xl">
+                                    <TabsTrigger 
+                                        value="login" 
+                                        className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm py-2"
+                                    >
+                                        登入
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="signup" 
+                                        className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm py-2"
+                                    >
+                                        註冊
+                                    </TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                            {authTab === 'login' ? (
+                                <form onSubmit={handleLogin} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input 
+                                            id="email" 
+                                            type="email" 
+                                            placeholder="name@example.com" 
+                                            value={loginEmail}
+                                            onChange={(e) => setLoginEmail(e.target.value)}
+                                            required
+                                            className="rounded-xl bg-stone-50 border-stone-200 focus:border-emerald-500 focus:ring-emerald-500 h-11"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="password">密碼</Label>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setShowForgotPassword(true)}
+                                                className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline"
+                                            >
+                                                忘記密碼？
+                                            </button>
+                                        </div>
+                                        <div className="relative">
+                                            <Input 
+                                                id="password" 
+                                                type={showPassword ? "text" : "password"} 
+                                                value={loginPassword}
+                                                onChange={(e) => setLoginPassword(e.target.value)}
+                                                required
+                                                className="rounded-xl bg-stone-50 border-stone-200 focus:border-emerald-500 focus:ring-emerald-500 h-11 pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                                            >
+                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <Button type="submit" className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-lg shadow-lg shadow-emerald-200" disabled={isLoggingIn}>
+                                        {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                                    登入
+                                    </Button>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleSignup} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">暱稱 (如：寶哥媽媽)</Label>
+                                        <Input 
+                                            id="name" 
+                                            placeholder="您的稱呼" 
+                                            value={signupName}
+                                            onChange={(e) => setSignupName(e.target.value)}
+                                            required
+                                            className="rounded-xl bg-stone-50 border-stone-200 h-10"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="birthday">生日 (用於計算生肖)</Label>
+                                        <Input 
+                                            id="birthday" 
+                                            type="date"
+                                            value={signupBirthday}
+                                            onChange={(e) => setSignupBirthday(e.target.value)}
+                                            required
+                                            className="rounded-xl bg-stone-50 border-stone-200 h-10"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="signup-email">Email</Label>
+                                        <Input 
+                                            id="signup-email" 
+                                            type="email" 
+                                            placeholder="name@example.com" 
+                                            value={signupEmail}
+                                            onChange={(e) => setSignupEmail(e.target.value)}
+                                            required
+                                            className="rounded-xl bg-stone-50 border-stone-200 h-10"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="signup-password">密碼</Label>
+                                        <div className="relative">
+                                            <Input 
+                                                id="signup-password" 
+                                                type={showPassword ? "text" : "password"} 
+                                                placeholder="設定您的密碼"
+                                                value={signupPassword}
+                                                onChange={(e) => setSignupPassword(e.target.value)}
+                                                required
+                                                minLength={6}
+                                                className="rounded-xl bg-stone-50 border-stone-200 h-10 pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                                            >
+                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <Button type="submit" className="w-full h-11 rounded-xl bg-stone-800 hover:bg-stone-900 shadow-lg" disabled={isSigningUp}>
+                                        {isSigningUp ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                                        註冊帳號
+                                    </Button>
+                                </form>
+                            )}
+                        </CardContent>
+                    </>
+                ) : (
+                    <>
+                        <CardHeader className="bg-stone-50/50 border-b border-stone-100/50 pb-4 pt-6">
+                            <CardTitle className="text-xl font-bold text-center text-stone-800">重設密碼</CardTitle>
+                            <CardDescription className="text-center text-stone-500">
+                                輸入您的 Email，我們將發送重設密碼連結給您
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                            <form onSubmit={handleForgotPassword} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="forgot-email">Email</Label>
+                                    <Input 
+                                        id="forgot-email" 
+                                        type="email" 
+                                        placeholder="name@example.com" 
+                                        value={forgotEmail}
+                                        onChange={(e) => setForgotEmail(e.target.value)}
+                                        required
+                                        className="rounded-xl bg-stone-50 border-stone-200 focus:border-emerald-500 focus:ring-emerald-500 h-11"
+                                    />
+                                </div>
+                                <div className="space-y-3 pt-2">
+                                    <Button type="submit" className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md" disabled={isSendingReset}>
+                                        {isSendingReset ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Mail className="w-4 h-4 mr-2" />}
+                                        發送重設信
+                                    </Button>
+                                    <Button type="button" variant="ghost" onClick={() => setShowForgotPassword(false)} className="w-full h-11 rounded-xl text-stone-500 hover:text-stone-700 hover:bg-stone-100">
+                                        <ArrowLeft className="w-4 h-4 mr-2" /> 返回登入
+                                    </Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </>
+                )}
             </Card>
         </div>
       );
@@ -581,6 +748,14 @@ export function MemberSection() {
                                         className="h-9 text-sm bg-white rounded-xl"
                                     />
                                 </div>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="w-full text-stone-500 rounded-xl border-dashed border-stone-300 hover:border-emerald-500 hover:text-emerald-600"
+                                    onClick={() => setShowResetPasswordDialog(true)}
+                                >
+                                    <Lock className="w-3 h-3 mr-2" /> 修改密碼
+                                </Button>
                                 <div className="flex gap-2 pt-2">
                                     <Button 
                                         size="sm" 
@@ -782,32 +957,7 @@ export function MemberSection() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-0 shadow-lg shadow-stone-100 bg-white rounded-[2rem] overflow-hidden">
-                                <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-6 pt-6">
-                                    <CardTitle className="text-xl flex items-center gap-3 text-stone-800">
-                                        <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
-                                            <Eye className="w-5 h-5" />
-                                        </div>
-                                        健康護眼模式
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-6 pt-6">
-                                    <div className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl">
-                                        <div className="space-y-1">
-                                            <Label className="text-base text-stone-700">藍光過濾</Label>
-                                            <p className="text-xs text-stone-400">自動調節螢幕色溫，減少藍光刺激</p>
-                                        </div>
-                                        <Switch defaultChecked className="data-[state=checked]:bg-blue-500" />
-                                    </div>
-                                    <div className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl">
-                                        <div className="space-y-1">
-                                            <Label className="text-base text-stone-700">休息提醒</Label>
-                                            <p className="text-xs text-stone-400">每玩 15 分鐘跳出休息提醒動畫</p>
-                                        </div>
-                                        <Switch defaultChecked className="data-[state=checked]:bg-blue-500" />
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            {/* Removed Health Eye Care Mode as requested */}
                         </motion.div>
                     </TabsContent>
 
@@ -898,6 +1048,59 @@ export function MemberSection() {
                         <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 flex-1" disabled={isVerifying || !verifyPassword}>
                             {isVerifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
                             驗證解鎖
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+
+        <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
+            <DialogContent className="sm:max-w-md rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
+                <DialogHeader className="bg-stone-50 p-6 pb-4 border-b border-stone-100">
+                    <DialogTitle className="text-xl font-bold text-stone-800 flex items-center gap-2">
+                        <Lock className="w-5 h-5 text-emerald-600" />
+                        修改密碼
+                    </DialogTitle>
+                    <DialogDescription className="text-stone-500">
+                        請輸入新的密碼以更新您的帳戶安全設定。
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleResetPassword}>
+                    <div className="p-6 space-y-4 bg-white">
+                        <div className="space-y-2">
+                            <Label htmlFor="new-password">新密碼</Label>
+                            <Input
+                                id="new-password"
+                                type="password"
+                                placeholder="請輸入新密碼 (至少6位)"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="rounded-xl h-11 bg-stone-50"
+                                required
+                                minLength={6}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirm-password">確認新密碼</Label>
+                            <Input
+                                id="confirm-password"
+                                type="password"
+                                placeholder="請再次輸入新密碼"
+                                value={confirmNewPassword}
+                                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                className="rounded-xl h-11 bg-stone-50"
+                                required
+                                minLength={6}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="p-6 pt-2 bg-white flex gap-2">
+                         <Button type="button" variant="ghost" onClick={() => setShowResetPasswordDialog(false)} className="rounded-xl flex-1 text-stone-500">
+                            取消
+                        </Button>
+                        <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 flex-1" disabled={isResettingPassword}>
+                            {isResettingPassword ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                            更新密碼
                         </Button>
                     </DialogFooter>
                 </form>

@@ -108,6 +108,7 @@ export function ParentingSection() {
 
   const handleArticleClick = async (id: number) => {
       setSelectedArticleId(id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       try {
           const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/view`, {
                 method: 'POST',

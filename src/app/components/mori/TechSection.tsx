@@ -112,6 +112,7 @@ export function TechSection() {
 
   const handleArticleClick = async (id: string) => {
       setSelectedArticleId(id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       try {
           const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/view`, {
                 method: 'POST',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Layout } from 'lucide-react';
 
 export interface TechArticle {
   id: string;
@@ -67,6 +67,231 @@ export const VUE3_ARTICLES: TechArticle[] = Array.from({ length: 30 }, (_, i) =>
 
 // UiPath Data
 export const UIPATH_ARTICLES: TechArticle[] = [
+  {
+    id: "ui-new-3",
+    title: "UiPath Orchestrator（OC）Management 帳號權限管理",
+    summary: "Host 與 Tenant 兩種 Management 有何不同？一次搞懂身份管理與平台控管架構。UiPath Orchestrator 除了流程管理外，還包含關鍵元件 Management（Identity Hub）。本文將帶你完整了解 Host Management 與 Tenant Management 的差異、功能與使用情境。",
+    date: "2025.12.31",
+    tags: ["UiPath", "Host", "Tenant", "Management", "Security"],
+    readTime: "8 min",
+    author: "工程師媽媽 Mega",
+    image: "/Morimori/assets/article-image-default.png",
+    category: "UiPath",
+    content: (
+        <div className="space-y-8 text-stone-700">
+            <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 text-stone-700">
+                <p className="mb-4 font-bold text-blue-900 text-lg">
+                    Host 與 Tenant 兩種 Management 有何不同？
+                </p>
+                <p className="mb-4">許多人在第一次接觸 UiPath Orchestrator (OC) 時會困惑：為什麼 OC 裡有兩個 Management？一個在 Host，一個在 Tenant 裡？</p>
+                <p>簡單來說，其邏輯類似「母公司」與「子公司」：</p>
+                <ul className="space-y-2 list-none pl-2 mt-4">
+                    <li className="flex items-start gap-3">
+                         <div className="min-w-6 h-6 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 text-xs font-bold mt-0.5">H</div>
+                         <div><strong>Host Management：</strong>最高層平台控管（母公司），管平台級的使用者政策與登入設定。</div>
+                    </li>
+                    <li className="flex items-start gap-3">
+                         <div className="min-w-6 h-6 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-700 text-xs font-bold mt-0.5">T</div>
+                         <div><strong>Tenant Management：</strong>租戶層使用者控管（子公司），管該租戶內可用的帳號、群組、機器人帳號等。</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 className="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-2 border-l-4 border-blue-500 pl-4">
+                    一、OC 的兩層 Management 架構
+                </h3>
+                <div className="bg-stone-800 text-stone-200 p-6 rounded-xl font-mono text-sm mb-6 shadow-lg">
+                    <p className="text-blue-300 font-bold mb-2">Host（平台級）</p>
+                    <div className="pl-6 border-l border-stone-600 space-y-3">
+                         <div className="flex items-center gap-2">
+                            <span className="text-stone-500">└──</span>
+                            <span className="text-emerald-300 font-bold">Tenant A</span>
+                            <span className="text-stone-500 text-xs">(獨立的 Management)</span>
+                         </div>
+                         <div className="flex items-center gap-2">
+                            <span className="text-stone-500">└──</span>
+                            <span className="text-emerald-300 font-bold">Tenant B</span>
+                            <span className="text-stone-500 text-xs">(獨立的 Management)</span>
+                         </div>
+                         <div className="flex items-center gap-2">
+                            <span className="text-stone-500">└──</span>
+                            <span className="text-emerald-300 font-bold">Tenant C</span>
+                            <span className="text-stone-500 text-xs">(獨立的 Management)</span>
+                         </div>
+                    </div>
+                </div>
+                <p className="text-stone-600">
+                    Host 是整個 Orchestrator 的最上層，負責平台級（全域）管理；而 Tenant 則是個別租戶的獨立管理區域。每層都有自己的 Identity Hub (Management)。
+                </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+                {/* Host Section */}
+                <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                    <div className="bg-blue-50 p-4 border-b border-blue-100 flex items-center gap-2">
+                        <div className="p-2 bg-blue-500 rounded-lg text-white">
+                            <Sparkles className="w-5 h-5" />
+                        </div>
+                        <h3 className="font-bold text-lg text-blue-800">Host Management</h3>
+                    </div>
+                    <div className="p-6 space-y-6">
+                        <div className="text-sm text-stone-500 bg-stone-50 p-3 rounded">
+                            <span className="font-bold text-stone-700 block mb-1">🔑 如何進入？</span>
+                            以 Host 身份登入 → 右上角「Go to Identity Hub」→ 左側點擊 Management
+                        </div>
+                        <ul className="space-y-4">
+                             <li className="flex gap-3">
+                                <div className="mt-1 min-w-5"><div className="w-2 h-2 rounded-full bg-blue-400"></div></div>
+                                <div>
+                                    <strong className="block text-stone-800">Users (平台級使用者)</strong>
+                                    <span className="text-sm text-stone-500">建立 Platform Admin，不屬於任何 Tenant，專門管理 Tenants。</span>
+                                </div>
+                             </li>
+                             <li className="flex gap-3">
+                                <div className="mt-1 min-w-5"><div className="w-2 h-2 rounded-full bg-blue-400"></div></div>
+                                <div>
+                                    <strong className="block text-stone-800">Security (全域安全)</strong>
+                                    <span className="text-sm text-stone-500">設定密碼複雜度、有效期限、登入鎖定、全域 MFA 政策。</span>
+                                </div>
+                             </li>
+                             <li className="flex gap-3">
+                                <div className="mt-1 min-w-5"><div className="w-2 h-2 rounded-full bg-blue-400"></div></div>
+                                <div>
+                                    <strong className="block text-stone-800">Audit Logs (稽核)</strong>
+                                    <span className="text-sm text-stone-500">查看 Host 層級操作（如新增 Tenant、License 變更）。</span>
+                                </div>
+                             </li>
+                             <li className="flex gap-3">
+                                <div className="mt-1 min-w-5"><div className="w-2 h-2 rounded-full bg-blue-400"></div></div>
+                                <div>
+                                    <strong className="block text-stone-800">Mail Settings (SMTP)</strong>
+                                    <span className="text-sm text-stone-500">設定平台的郵件伺服器，接收 Host 系統告警。</span>
+                                </div>
+                             </li>
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Tenant Section */}
+                <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+                    <div className="bg-emerald-50 p-4 border-b border-emerald-100 flex items-center gap-2">
+                        <div className="p-2 bg-emerald-500 rounded-lg text-white">
+                            <Layout className="w-5 h-5" />
+                        </div>
+                        <h3 className="font-bold text-lg text-emerald-800">Tenant Management</h3>
+                    </div>
+                    <div className="p-6 space-y-6">
+                        <div className="text-sm text-stone-500 bg-stone-50 p-3 rounded">
+                            <span className="font-bold text-stone-700 block mb-1">🔑 如何進入？</span>
+                            以 Tenant 身份登入 → 右上角「Go to Identity Hub」→ 左側點擊 Management
+                        </div>
+                        <ul className="space-y-4">
+                             <li className="flex gap-3">
+                                <div className="mt-1 min-w-5"><div className="w-2 h-2 rounded-full bg-emerald-400"></div></div>
+                                <div>
+                                    <strong className="block text-stone-800">Accounts & Groups</strong>
+                                    <span className="text-sm text-stone-500">建立使用者帳號、機器人帳號 (Robot Accounts)、設定群組權限。</span>
+                                </div>
+                             </li>
+                             <li className="flex gap-3">
+                                <div className="mt-1 min-w-5"><div className="w-2 h-2 rounded-full bg-emerald-400"></div></div>
+                                <div>
+                                    <strong className="block text-stone-800">Security (租戶安全)</strong>
+                                    <span className="text-sm text-stone-500">可調整該租戶的登入安全策略（若 Host 未強制鎖定）。</span>
+                                </div>
+                             </li>
+                             <li className="flex gap-3">
+                                <div className="mt-1 min-w-5"><div className="w-2 h-2 rounded-full bg-emerald-400"></div></div>
+                                <div>
+                                    <strong className="block text-stone-800">External Apps</strong>
+                                    <span className="text-sm text-stone-500">註冊外部應用與第三方 API (OAuth/OpenID Connect)。</span>
+                                </div>
+                             </li>
+                             <li className="flex gap-3">
+                                <div className="mt-1 min-w-5"><div className="w-2 h-2 rounded-full bg-emerald-400"></div></div>
+                                <div>
+                                    <strong className="block text-stone-800">Mail Settings</strong>
+                                    <span className="text-sm text-stone-500">設定該 Tenant 專用的 SMTP，用於發送業務流程通知。</span>
+                                </div>
+                             </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 className="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-2 border-l-4 border-amber-500 pl-4">
+                    Host vs Tenant Management 差異總表
+                </h3>
+                <div className="overflow-hidden rounded-xl border border-stone-200">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-stone-50 text-stone-700 font-bold uppercase">
+                            <tr>
+                                <th className="px-6 py-4">功能項目</th>
+                                <th className="px-6 py-4 text-blue-700">Host Management</th>
+                                <th className="px-6 py-4 text-emerald-700">Tenant Management</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-stone-100 bg-white">
+                            <tr className="hover:bg-stone-50/50">
+                                <td className="px-6 py-4 font-bold text-stone-800">管理範圍</td>
+                                <td className="px-6 py-4 text-stone-600">全平台 (Platform Level)</td>
+                                <td className="px-6 py-4 text-stone-600">單一租戶 (Tenant Level)</td>
+                            </tr>
+                            <tr className="hover:bg-stone-50/50">
+                                <td className="px-6 py-4 font-bold text-stone-800">使用者管理</td>
+                                <td className="px-6 py-4 text-stone-600">Host Admin (平台管理員)</td>
+                                <td className="px-6 py-4 text-stone-600">一般使用者、機器人帳號</td>
+                            </tr>
+                            <tr className="hover:bg-stone-50/50">
+                                <td className="px-6 py-4 font-bold text-stone-800">群組 (Groups)</td>
+                                <td className="px-6 py-4 text-stone-400">❌ 無此功能</td>
+                                <td className="px-6 py-4 text-emerald-600 font-bold">✔ 核心功能</td>
+                            </tr>
+                            <tr className="hover:bg-stone-50/50">
+                                <td className="px-6 py-4 font-bold text-stone-800">機器人帳號</td>
+                                <td className="px-6 py-4 text-stone-400">❌ 無此功能</td>
+                                <td className="px-6 py-4 text-emerald-600 font-bold">✔ 核心功能</td>
+                            </tr>
+                            <tr className="hover:bg-stone-50/50">
+                                <td className="px-6 py-4 font-bold text-stone-800">外部應用整合</td>
+                                <td className="px-6 py-4 text-stone-400">❌ 無此功能</td>
+                                <td className="px-6 py-4 text-emerald-600 font-bold">✔ External Applications</td>
+                            </tr>
+                            <tr className="hover:bg-stone-50/50">
+                                <td className="px-6 py-4 font-bold text-stone-800">SMTP 郵件</td>
+                                <td className="px-6 py-4 text-stone-600">Host 系統級通知</td>
+                                <td className="px-6 py-4 text-stone-600">Tenant 業務級通知</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div className="bg-stone-800 text-stone-200 p-8 rounded-2xl mt-8">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                    工程師媽媽的總結
+                </h3>
+                <p className="mb-4 leading-relaxed text-stone-300">
+                    分清楚這兩層 Management 是掌握企業級 RPA 架構的第一步。
+                    Host 是房東，負責把大樓蓋好、確保大門安全；Tenant 是租客公司，負責管理自己的員工進出、辦公室內的規矩。
+                </p>
+                <div className="grid md:grid-cols-2 gap-4 mt-6">
+                    <div className="bg-stone-700/50 p-4 rounded-lg border border-stone-600">
+                        <strong className="text-blue-300 block mb-1">📌 Host Management</strong>
+                        <span className="text-sm text-stone-400">控管全域安全、登入策略與平台預設值。不管理機器人與業務流程。</span>
+                    </div>
+                    <div className="bg-stone-700/50 p-4 rounded-lg border border-stone-600">
+                        <strong className="text-emerald-300 block mb-1">📌 Tenant Management</strong>
+                        <span className="text-sm text-stone-400">企業最常用的管理區。管理帳號、群組、Robot Accounts、與外部系統串接。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+  },
   {
     id: "ui-new-2",
     title: "UiPath Orchestrator（OC）Host 最高管理員：Tenant 建立、授權分配、License 更新全流程",
