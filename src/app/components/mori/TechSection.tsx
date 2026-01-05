@@ -259,7 +259,7 @@ export function TechSection() {
                     exit={{ opacity: 0, x: -20 }}
                     className="bg-white rounded-3xl p-8 shadow-sm border border-stone-100"
                 >
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
                         <Button 
                             variant="ghost" 
                             onClick={() => setSelectedArticleId(null)}
@@ -268,26 +268,26 @@ export function TechSection() {
                             <ArrowLeft className="w-5 h-5 mr-2" />
                             返回列表
                         </Button>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
                              <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className={`gap-2 ${userCollections.includes(selectedArticle.id) ? "text-yellow-600 border-yellow-200 bg-yellow-50" : ""}`} 
+                                className={`gap-2 flex-1 sm:flex-none ${userCollections.includes(selectedArticle.id) ? "text-yellow-600 border-yellow-200 bg-yellow-50" : ""}`} 
                                 onClick={(e) => handleToggleCollection(selectedArticle.id, e)}
                              >
                                 <Bookmark className={`w-4 h-4 ${userCollections.includes(selectedArticle.id) ? "fill-yellow-600" : ""}`} />
-                                {userCollections.includes(selectedArticle.id) ? "已收藏" : "收藏"}
+                                <span className="whitespace-nowrap">{userCollections.includes(selectedArticle.id) ? "已收藏" : "收藏"}</span>
                             </Button>
                             <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className={`gap-2 ${userLikes.includes(selectedArticle.id) ? "text-rose-500 border-rose-200 bg-rose-50" : ""}`}
+                                className={`gap-2 flex-1 sm:flex-none ${userLikes.includes(selectedArticle.id) ? "text-rose-500 border-rose-200 bg-rose-50" : ""}`}
                                 onClick={(e) => handleToggleLike(selectedArticle.id, e)}
                             >
                                 <Heart className={`w-4 h-4 ${userLikes.includes(selectedArticle.id) ? "fill-rose-500" : ""}`} />
                                 {likeCounts[selectedArticle.id] || 0}
                             </Button>
-                            <Button variant="outline" size="sm" className="gap-2" onClick={(e) => handleShare(selectedArticle.title, e)}>
+                            <Button variant="outline" size="sm" className="gap-2 flex-1 sm:flex-none" onClick={(e) => handleShare(selectedArticle.title, e)}>
                                 <Share2 className="w-4 h-4" />
                                 分享
                             </Button>
@@ -395,7 +395,7 @@ export function TechSection() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="w-12 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-4 group-hover:translate-x-0 duration-300">
+                                                <div className="hidden sm:flex w-12 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity -translate-x-4 group-hover:translate-x-0 duration-300">
                                                     <ArrowRight className="w-5 h-5 text-emerald-400" />
                                                 </div>
                                             </CardContent>
@@ -429,7 +429,7 @@ export function TechSection() {
                                     >
                                         <div className="h-2 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
                                         <CardContent className="p-6 flex-1 flex flex-col">
-                                            <div className="flex items-center gap-3 text-xs text-stone-400 font-mono mb-4">
+                                            <div className="flex flex-wrap items-center gap-3 text-xs text-stone-400 font-mono mb-4">
                                                 <Badge variant="outline" className="text-blue-600 bg-blue-50 border-blue-100">UiPath</Badge>
                                                 <span>{article.date}</span>
                                                 <span>•</span>

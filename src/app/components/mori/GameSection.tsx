@@ -8,6 +8,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { useGameTime } from '../../context/GameTimeContext';
 import { useAuth } from '../../context/AuthContext';
 import { MathGarden } from './MathGarden';
+import { ShadowGame } from './ShadowGame';
 const gameBg = '/Morimori/assets/forest-game-bg.png';
 import {
   Dialog,
@@ -47,6 +48,15 @@ const GAMES: Game[] = [
     time: '5-15 分',
     image: '/Morimori/assets/math-garden-cover.png',
     color: 'bg-indigo-100 text-indigo-800'
+  },
+  {
+    id: 'shadow',
+    title: '影子猜猜看',
+    description: '觀察黑色的影子，猜猜看是哪位動物好朋友？',
+    age: '3-5 歲',
+    time: '5 分',
+    image: 'https://images.unsplash.com/photo-1685459841526-525b9fb1ac9b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXRlJTIwYW5pbWFsJTIwc2lsaG91ZXR0ZSUyMHBhcGVyJTIwY3V0JTIwYXJ0JTIwZm9yJTIwa2lkc3xlbnwxfHx8fDE3Njc2MDM0OTh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    color: 'bg-orange-100 text-orange-800'
   }
 ];
 
@@ -85,6 +95,10 @@ export function GameSection() {
 
   if (activeGame === 'math') {
     return <MathGarden onExit={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === 'shadow') {
+    return <ShadowGame onExit={() => setActiveGame(null)} />;
   }
 
   return (
@@ -328,7 +342,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
 
   return (
     <div 
-        className="fixed inset-0 z-50 bg-stone-50 flex flex-col select-none overflow-hidden touch-none bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 z-50 bg-stone-50 flex flex-col select-none overflow-hidden touch-none bg-[length:auto_100%] md:bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${gameBg})` }}
     >
       {/* Header */}

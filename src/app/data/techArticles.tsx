@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Layout } from 'lucide-react';
+import { Sparkles, Layout, Check } from 'lucide-react';
 
 export interface TechArticle {
   id: string;
@@ -67,6 +67,213 @@ export const VUE3_ARTICLES: TechArticle[] = Array.from({ length: 30 }, (_, i) =>
 
 // UiPath Data
 export const UIPATH_ARTICLES: TechArticle[] = [
+  {
+    id: "ui-new-4",
+    title: "UiPath OC Tenant 功能解析",
+    summary: "從 Robots、Folders、Packages、Machines 到安全性與監控，一篇搞懂 Tenant 可以做什麼。",
+    date: "2026.01.05",
+    tags: ["Tenant", "Robots", "Folders", "Packages"],
+    readTime: "10 min",
+    author: "工程師媽媽 Mega",
+    image: "/Morimori/assets/article-image-default.png",
+    category: "UiPath",
+    content: (
+        <div className="space-y-8 text-stone-700">
+            <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 text-stone-700">
+                <p className="mb-4 font-bold text-emerald-900 text-lg">
+                    Tenant 是「企業級自動化中心」的重要管理單位
+                </p>
+                <p className="mb-4">在 UiPath Orchestrator 的整體架構中，所有有效的自動化資源（流程、機器人、帳號、群組、權限、排程等）都在 Tenant 內運作。</p>
+                <p>本文將系統性介紹 OC 中 Tenant 的所有主要功能，並補充使用情境、注意事項與企業導入時的最佳實務。</p>
+            </div>
+
+            <div>
+                <h3 className="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-2 border-l-4 border-emerald-500 pl-4">
+                    一、Tenant 在 OC 中的角色是什麼？
+                </h3>
+                <p className="mb-4">在 UiPath 架構中，Tenant 是一個「隔離的自動化空間」。 不同 Tenant 之間的資源、使用者、流程、設定皆互不影響。</p>
+                <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                    <h4 className="font-bold text-stone-800 mb-4 flex items-center gap-2">
+                        <span className="bg-emerald-100 text-emerald-600 p-1 rounded">💡</span>
+                        主要用途
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {["區分正式／測試環境", "區分不同事業部", "提供權限隔離", "資源控管（Flows, Queues, Robots, Assets）"].map((item, i) => (
+                            <div key={i} className="flex items-center gap-2 text-stone-600">
+                                <Check className="w-4 h-4 text-emerald-500" />
+                                {item}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 className="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-2 border-l-4 border-emerald-500 pl-4">
+                    二、Tenant 主要功能介紹（詳細版）
+                </h3>
+                <p className="mb-6 text-stone-500">以下依照 Orchestrator 介面順序與概念架構整理。</p>
+
+                <div className="space-y-8">
+                    {/* Robots */}
+                    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+                        <div className="bg-stone-50 p-4 border-b border-stone-100 flex items-center gap-2">
+                            <span className="font-mono bg-stone-200 px-2 py-0.5 rounded text-stone-600 font-bold">1️⃣</span>
+                            <h4 className="font-bold text-lg text-stone-800">Robots（機器人列表）</h4>
+                        </div>
+                        <div className="p-6">
+                            <p className="mb-4 text-stone-600">顯示並管理所有在 Tenant 中的機器人（Robot Accounts）。</p>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <strong className="block text-sm font-bold text-stone-700 mb-2">📋 可查看資訊：</strong>
+                                    <ul className="list-disc pl-5 text-sm text-stone-500 space-y-1">
+                                        <li>機器人類型（Attended / Unattended）</li>
+                                        <li>帳號類型（User / Machine account）</li>
+                                        <li>License 類型、網域（Domain）、主機名稱（Machine）</li>
+                                        <li>Robot 連線狀態、最後執行時間、版本等</li>
+                                    </ul>
+                                </div>
+                                <div className="bg-amber-50 p-4 rounded-lg border border-amber-100 text-sm">
+                                    <strong className="block text-amber-700 mb-2">⚠️ 實務提醒</strong>
+                                    <p className="text-amber-800">機器人若大量 offline，需要檢查：連線模式（Key / User Mode）、License 是否足夠、 Orchestrator URL、Key 是否過期、Windows 服務是否正在運作</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Folders */}
+                    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+                        <div className="bg-stone-50 p-4 border-b border-stone-100 flex items-center gap-2">
+                            <span className="font-mono bg-stone-200 px-2 py-0.5 rounded text-stone-600 font-bold">2️⃣</span>
+                            <h4 className="font-bold text-lg text-stone-800">Folders（資料夾：流程與資源的邏輯空間）</h4>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <p className="text-stone-600">Folder 是 OC 中最重要的邏輯隔離工具，可用來管理：流程（Processes）、資產（Assets）、 佇列（Queues）、使用者／機器人的 Folder-Level 權限。</p>
+                            
+                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <strong className="text-blue-700 block mb-2">📌 注意：Classic Folders 已淘汰</strong>
+                                <p className="text-sm text-blue-600">新建立的 Folder 一律為 Modern Folder，支援 AD / Robot Account / Role-Based Access 與 per-folder packages feed。</p>
+                            </div>
+
+                            <div>
+                                <strong className="block text-sm font-bold text-stone-700 mb-2">📌 Folder 的主要功能：</strong>
+                                <ul className="space-y-2 text-sm text-stone-600">
+                                    <li className="flex gap-2">
+                                        <div className="min-w-4 mt-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
+                                        <div><strong>Assign Account / Group / External App</strong> → 設定帳號能否看到此 Folder</div>
+                                    </li>
+                                    <li className="flex gap-2">
+                                        <div className="min-w-4 mt-1"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div></div>
+                                        <div><strong>設定 Process Packages Source</strong> → 建立專屬的 "Folder Packages"，可完全隔離專案，避免跨部門觀察到彼此流程。</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Monitoring */}
+                    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+                        <div className="bg-stone-50 p-4 border-b border-stone-100 flex items-center gap-2">
+                            <span className="font-mono bg-stone-200 px-2 py-0.5 rounded text-stone-600 font-bold">3️⃣</span>
+                            <h4 className="font-bold text-lg text-stone-800">Monitoring（監控儀表板）</h4>
+                        </div>
+                        <div className="p-6">
+                            <p className="mb-4 text-stone-600">Tenant 層級的自動化監控中心，常用於追蹤流程穩定度、查錯（Error / BusinessException）、管理機器人資源利用率。</p>
+                            <div className="flex flex-wrap gap-2">
+                                {["Robot 狀態", "Logs 數量", "Queue item 統計", "Triggers 成功/失敗", "流程執行分析"].map(tag => (
+                                    <span key={tag} className="bg-stone-100 text-stone-600 px-2 py-1 rounded text-xs border border-stone-200">{tag}</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Manage Access */}
+                    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+                        <div className="bg-stone-50 p-4 border-b border-stone-100 flex items-center gap-2">
+                            <span className="font-mono bg-stone-200 px-2 py-0.5 rounded text-stone-600 font-bold">4️⃣</span>
+                            <h4 className="font-bold text-lg text-stone-800">Manage Access（帳號、角色與權限控管中心）</h4>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <p className="text-stone-600">此區域用於分配角色（Role）與帳號權限配置。 <br/><code className="bg-stone-100 px-1 rounded text-stone-800">使用者（Accounts）+ 角色（Roles）＝使用者能看到與操作的內容</code></p>
+                            
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <strong className="text-stone-800 block border-b border-stone-100 pb-2">📌 Add a new Role（角色類型）</strong>
+                                    <ul className="space-y-2 text-sm text-stone-600">
+                                        <li><strong>Tenant Role：</strong>大層級權限，影響所有 Folder</li>
+                                        <li><strong>Folder Role：</strong>只影響某個 Folder</li>
+                                    </ul>
+                                    <div className="bg-stone-50 p-3 rounded text-xs text-stone-500">
+                                        企業常見做法：<br/>
+                                        Admin → Tenant Role<br/>
+                                        部門承辦 → Folder Role<br/>
+                                        機器人 → Folder Role + Robot Permission
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <strong className="text-stone-800 block border-b border-stone-100 pb-2">📌 Robot Setting（非常重要）</strong>
+                                    <p className="text-sm text-stone-600">Robot 執行流程的畫面解析度需與開發者電腦解析度、機器人環境解析度保持一致，否則會出現 UI 點不到、按鈕位置錯誤等問題。</p>
+                                    <div className="text-emerald-600 font-bold text-sm">💡 企業建議統一設定：1920 × 1080（建議 32 bit color）</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Others Grid */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {[
+                            { id: "5️⃣", title: "Machines", desc: "定義 OC 與 Robot 的連線橋樑，建立連線 Key、定義執行能力（Capacity）、授權 Unattended Robot。" },
+                            { id: "6️⃣", title: "Packages", desc: "流程包管理，顯示所有被發佈到此 Tenant 的流程包，企業可統一控管流程版本。" },
+                            { id: "7️⃣", title: "Audit", desc: "稽核紀錄，記錄 Tenant 內所有重要操作，對資訊安全、稽核、故障排查非常重要。" },
+                            { id: "8️⃣", title: "Credential Stores", desc: "密碼儲存區，安全儲存敏感資訊，可與 CyberArk、Azure Key Vault 等企業級金鑰系統整合。" },
+                            { id: "9️⃣", title: "Webhooks", desc: "事件推送功能，讓外部系統即時接收 Orchestrator 事件，可串接 Slack / Teams。" },
+                            { id: "🔟", title: "License", desc: "授權管理，顯示 Tenant 下的 License 使用狀態、到期時間、使用者授權等。" },
+                            { id: "1️⃣1️⃣", title: "Alerts", desc: "警報系統，顯示 Tenant 中發生的異常事件，用於快速定位問題。" },
+                            { id: "1️⃣2️⃣", title: "Non-Working Days", desc: "排程例外日，設定自動化流程不要執行的日期（國定假日、公司休假日等）。" },
+                        ].map((item, i) => (
+                            <div key={i} className="bg-white p-4 rounded-xl border border-stone-200 shadow-sm flex gap-3">
+                                <div className="text-2xl pt-1">{item.id}</div>
+                                <div>
+                                    <h5 className="font-bold text-stone-800 mb-1">{item.title}</h5>
+                                    <p className="text-sm text-stone-500">{item.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                </div>
+            </div>
+
+            <div className="bg-stone-800 text-stone-200 p-8 rounded-2xl mt-8">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                    總結：Tenant 是企業自動化的核心運作中心
+                </h3>
+                <p className="mb-4 leading-relaxed text-stone-300">
+                    Tenant 功能非常豐富，涵蓋自動化管理的每一個面向。掌握 Tenant 的每個功能，就能完整操作 UiPath 自動化平台，並制定企業級的 RPA 管理規範。
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 text-sm text-center">
+                    <div className="bg-stone-700 p-3 rounded-lg border border-stone-600">
+                        <div className="text-stone-400 mb-1">機器人</div>
+                        <div className="text-white font-bold">Robots / Machines</div>
+                    </div>
+                    <div className="bg-stone-700 p-3 rounded-lg border border-stone-600">
+                        <div className="text-stone-400 mb-1">權限</div>
+                        <div className="text-white font-bold">Manage Access</div>
+                    </div>
+                    <div className="bg-stone-700 p-3 rounded-lg border border-stone-600">
+                        <div className="text-stone-400 mb-1">資源管理</div>
+                        <div className="text-white font-bold">Folders / Packages</div>
+                    </div>
+                    <div className="bg-stone-700 p-3 rounded-lg border border-stone-600">
+                        <div className="text-stone-400 mb-1">安全</div>
+                        <div className="text-white font-bold">Audit / Credential</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+  },
   {
     id: "ui-new-3",
     title: "UiPath Orchestrator（OC）Management 帳號權限管理",
