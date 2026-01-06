@@ -16,7 +16,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "../ui/dialog";
-import toolkitBg from "figma:asset/c89e93521cb8e082c0275c6f1465a31f70b877a8.png";
+
+const toolkitBg = "/Morimori/assets/unnamed.png";
 
 interface ToolkitSectionProps {
   setView: (view: string) => void;
