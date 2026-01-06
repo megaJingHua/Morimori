@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, RefreshCw, Star, Delete, Check, Lightbulb, User, ArrowRight } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Star, Delete, Check, Lightbulb, User, ArrowRight, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card } from '../ui/card';
@@ -183,6 +183,17 @@ export function MathGarden({ onExit }: { onExit: () => void }) {
                             </motion.div>
                          </div>
                     )}
+                    {isCorrect === false && (
+                         <div className="absolute inset-0 z-10 bg-red-500/10 flex items-center justify-center backdrop-blur-[1px]">
+                            <motion.div 
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1.2, rotate: [0, -10, 10, -10, 10, 0] }}
+                                className="bg-white rounded-full p-6 shadow-2xl"
+                            >
+                                <X className="w-20 h-20 text-red-500 stroke-[4]" />
+                            </motion.div>
+                         </div>
+                    )}
 
                     <div className="p-6 md:p-8 space-y-6">
                         {/* Visual Representation */}
@@ -227,9 +238,9 @@ export function MathGarden({ onExit }: { onExit: () => void }) {
                             </motion.span>
                             <span className="text-stone-300">=</span>
                             <div className={`
-                                min-w-[1.5em] h-[1.2em] border-b-4 border-dashed text-center flex items-center justify-center
-                                ${isCorrect === false ? 'border-red-400 text-red-500 animate-shake' : 'border-stone-300 text-emerald-600'}
-                                ${isCorrect === true ? 'border-emerald-500' : ''}
+                                min-w-[1.5em] h-[1.2em] border-b-4 border-dashed text-center flex items-center justify-center rounded-lg transition-colors
+                                ${isCorrect === false ? 'border-red-400 text-red-500 animate-shake bg-red-50' : 'border-stone-300 text-emerald-600'}
+                                ${isCorrect === true ? 'border-emerald-500 bg-emerald-50' : ''}
                             `}>
                                 {userAnswer}
                                 {userAnswer === "" && <span className="opacity-0">?</span>}

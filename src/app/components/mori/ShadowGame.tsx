@@ -147,15 +147,13 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
                 <div className="relative">
                     <Card className="w-64 h-64 md:w-80 md:h-80 bg-white/90 backdrop-blur-sm border-4 border-orange-100 shadow-xl rounded-[2rem] flex items-center justify-center relative overflow-hidden">
                         {isCorrect === true && (
-                            <div className="absolute inset-0 z-10 bg-orange-400/10 flex items-center justify-center backdrop-blur-[1px]">
-                                <motion.div 
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1.2 }}
-                                    className="bg-white rounded-full p-4 shadow-lg"
-                                >
-                                    <Check className="w-16 h-16 text-orange-500 stroke-[4]" />
-                                </motion.div>
-                            </div>
+                            <motion.div 
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="absolute top-2 right-2 z-20 bg-white rounded-full p-2 shadow-md"
+                            >
+                                <Check className="w-8 h-8 text-emerald-500 stroke-[4]" />
+                            </motion.div>
                         )}
 
                         <motion.div
