@@ -10,7 +10,10 @@ import { useAuth } from '../../context/AuthContext';
 import { MathGarden } from './MathGarden';
 import { ShadowGame } from './ShadowGame';
 import { TimeUpOverlay } from './TimeUpOverlay';
-import forestBg from 'figma:asset/3a89b24ed2caa272a3e68a975f514ac5de0bbefc.png';
+
+// Use static asset path instead of Figma import
+const forestBg = '/Morimori/assets/forest-bg.png';
+
 import {
   Dialog,
   DialogContent,
