@@ -9,7 +9,8 @@ import { useGameTime } from '../../context/GameTimeContext';
 import { useAuth } from '../../context/AuthContext';
 import { MathGarden } from './MathGarden';
 import { ShadowGame } from './ShadowGame';
-const gameBg = '/Morimori/assets/forest-game-bg.png';
+import { TimeUpOverlay } from './TimeUpOverlay';
+import forestBg from 'figma:asset/3a89b24ed2caa272a3e68a975f514ac5de0bbefc.png';
 import {
   Dialog,
   DialogContent,
@@ -55,7 +56,7 @@ const GAMES: Game[] = [
     description: '觀察黑色的影子，猜猜看是哪位動物好朋友？',
     age: '3-5 歲',
     time: '5 分',
-    image: 'https://images.unsplash.com/photo-1685459841526-525b9fb1ac9b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXRlJTIwYW5pbWFsJTIwc2lsaG91ZXR0ZSUyMHBhcGVyJTIwY3V0JTIwYXJ0JTIwZm9yJTIwa2lkc3xlbnwxfHx8fDE3Njc2MDM0OTh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    image: '/Morimori/assets/shadow-game-cover.png',
     color: 'bg-orange-100 text-orange-800'
   }
 ];
@@ -64,7 +65,22 @@ function FloatingTimer() {
   const { user } = useAuth();
   const { dailyLimit, timeUsed, isPlaying } = useGameTime();
 
-  if (!user) return null;
+  // If guest, show simplified timer or unlimited badge
+  if (!user) {
+      return (
+        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-5 py-3 rounded-full shadow-xl bg-white border border-stone-100 animate-in fade-in slide-in-from-bottom-4">
+            <div className="p-2 rounded-full bg-emerald-100 text-emerald-500">
+                <Sparkles className={`w-5 h-5 ${isPlaying ? 'animate-pulse' : ''}`} />
+            </div>
+            <div className="flex flex-col items-start">
+                <span className="text-xs text-stone-400 font-medium">訪客模式</span>
+                <span className="text-base font-bold text-stone-700">
+                    時間不限
+                </span>
+            </div>
+        </div>
+      );
+  }
 
   const remainingSeconds = Math.max(0, dailyLimit * 60 - timeUsed);
   const minutes = Math.floor(remainingSeconds / 60);
@@ -101,9 +117,33 @@ export function GameSection() {
     return <ShadowGame onExit={() => setActiveGame(null)} />;
   }
 
+  const { user } = useAuth();
+
   return (
     <div className="space-y-8 py-8">
       <FloatingTimer />
+      
+      {!user && (
+         <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left shadow-sm mx-auto max-w-4xl"
+         >
+             <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                     <Clock className="w-5 h-5 text-indigo-600" />
+                 </div>
+                 <div>
+                     <h3 className="font-bold text-indigo-900">想設定「護眼模式」與「遊玩時限」嗎？</h3>
+                     <p className="text-sm text-indigo-600/80">
+                         目前為訪客無限暢玩模式。登入會員即可設定每日遊玩時間，保護孩子的視力健康！
+                     </p>
+                 </div>
+             </div>
+             {/* Note: In a real app we might redirect to login, here we just inform */}
+         </motion.div>
+      )}
+
       <div className="text-center space-y-4 mb-12">
         <h2 className="text-3xl font-bold text-stone-800">親子遊戲大廳</h2>
         <p className="text-stone-500 max-w-2xl mx-auto">
@@ -121,11 +161,22 @@ export function GameSection() {
           >
             <Card className="h-full border-none shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
               <div className="aspect-[4/3] relative">
-                <ImageWithFallback 
-                    src={game.image}
-                    alt={game.title}
-                    className="w-full h-full object-cover"
-                />
+                {game.id === 'shadow' ? (
+                   <div className="w-full h-full relative">
+                      <ImageWithFallback 
+                        src={forestBg}
+                        alt={game.title}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Overlay to ensure text readability if needed, or keeping it clean */}
+                   </div>
+                ) : (
+                    <ImageWithFallback 
+                        src={game.image}
+                        alt={game.title}
+                        className="w-full h-full object-cover"
+                    />
+                )}
                 <div className="absolute top-4 left-4">
                   <Badge className={`${game.color} hover:${game.color}`}>
                     {game.age}
@@ -232,32 +283,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   };
 
   if (isTimeUp) {
-      return (
-          <div className="fixed inset-0 z-[100] bg-stone-900/95 backdrop-blur-sm flex items-center justify-center p-4">
-              <motion.div 
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="max-w-md w-full bg-white rounded-3xl p-8 text-center space-y-6 shadow-2xl"
-              >
-                  <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
-                      <Moon className="w-12 h-12 text-indigo-500" />
-                  </div>
-                  <div className="space-y-2">
-                      <h2 className="text-2xl font-bold text-stone-800">鎖定! 眼睛該休息囉!!</h2>
-                      <p className="text-stone-500 leading-relaxed">
-                          今天的眼睛運動時間結束了。<br/>
-                          爸爸媽媽，我們一起去喝杯水、看看遠方吧！
-                      </p>
-                  </div>
-                  <div className="pt-4">
-                      <Button onClick={onExit} size="lg" className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 h-12 text-lg">
-                          <Home className="w-5 h-5 mr-2" />
-                          回到大廳
-                      </Button>
-                  </div>
-              </motion.div>
-          </div>
-      );
+      return <TimeUpOverlay onExit={onExit} />;
   }
 
   const shuffleCards = () => {
@@ -343,7 +369,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   return (
     <div 
         className="fixed inset-0 z-50 bg-stone-50 flex flex-col select-none overflow-hidden touch-none bg-[length:auto_100%] md:bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${gameBg})` }}
+        style={{ backgroundImage: `url(${forestBg})` }}
     >
       {/* Header */}
       <div className="flex-none px-4 py-3 bg-white/90 backdrop-blur-md shadow-sm flex justify-between items-center z-20">

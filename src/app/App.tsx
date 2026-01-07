@@ -8,6 +8,7 @@ import { GameSection } from './components/mori/GameSection';
 import { TechSection } from './components/mori/TechSection';
 import { MemberSection } from './components/mori/MemberSection';
 import { ToolkitSection } from './components/mori/ToolkitSection';
+import { EnglishSection } from './components/mori/EnglishSection';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
@@ -37,6 +38,8 @@ export default function App() {
         return <ToolkitSection setView={setCurrentView} />;
       case 'tech':
         return <TechSection />;
+      case 'english':
+        return <EnglishSection />;
       case 'member':
         return <MemberSection defaultShowResetPassword={pendingResetPassword} />;
       default:

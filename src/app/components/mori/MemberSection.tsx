@@ -641,7 +641,7 @@ export function MemberSection({ defaultShowResetPassword = false }: { defaultSho
   if (selectedArticleId && selectedArticle) {
       return (
           <div className="max-w-5xl mx-auto py-8">
-               <div className="mb-6">
+               <div className="mb-6 px-4 md:px-0">
                    <Button variant="ghost" onClick={() => setSelectedArticleId(null)} className="pl-0 hover:bg-transparent hover:text-emerald-600 text-stone-500">
                       <ArrowLeft className="w-4 h-4 mr-2" /> 回到會員中心
                    </Button>

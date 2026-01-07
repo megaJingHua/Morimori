@@ -17,8 +17,6 @@ import {
   DialogFooter,
 } from "../ui/dialog";
 
-const toolkitBg = "/Morimori/assets/unnamed.png";
-
 interface ToolkitSectionProps {
   setView: (view: string) => void;
 }
@@ -90,13 +88,8 @@ export function ToolkitSection({ setView }: ToolkitSectionProps) {
   }
 
   return (
-    <div 
-        className="max-w-5xl mx-auto py-6 px-4 md:py-12 md:px-8 space-y-8 rounded-3xl min-h-[600px] shadow-sm border border-stone-100/50 bg-[length:auto_100%] bg-center bg-no-repeat md:bg-cover bg-fixed"
-        style={{
-            backgroundImage: `url(${toolkitBg})`,
-        }}
-    >
-      <div className="space-y-6 md:space-y-8 bg-white/60 backdrop-blur-sm p-6 md:p-8 rounded-3xl border border-white/50 shadow-sm">
+    <div className="max-w-5xl mx-auto py-12 px-4 md:px-8 space-y-8">
+      <div className="space-y-6 md:space-y-8">
           <div className="text-center space-y-4">
               <h2 className="text-3xl font-bold text-stone-800">萬能工具包</h2>
               <p className="text-stone-500">

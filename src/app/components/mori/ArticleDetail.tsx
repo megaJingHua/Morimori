@@ -54,7 +54,7 @@ export function ArticleDetail({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="max-w-3xl mx-auto py-8 bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden"
+        className="max-w-3xl mx-auto md:py-8 md:bg-white md:rounded-3xl md:shadow-sm md:border md:border-stone-100 overflow-hidden"
     >
         {/* Header Image */}
         <div className="relative h-64 md:h-80 w-full">

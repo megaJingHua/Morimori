@@ -257,7 +257,7 @@ export function TechSection() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="bg-white rounded-3xl p-8 shadow-sm border border-stone-100"
+                    className="md:bg-white md:rounded-3xl md:p-8 md:shadow-sm md:border md:border-stone-100"
                 >
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
                         <Button 

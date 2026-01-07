@@ -12,7 +12,9 @@ import {
   Heart,
   Sparkles,
   User,
-  Loader2, // Import Loader2
+  Loader2,
+  Briefcase,
+  Plane,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -258,6 +260,74 @@ export function LandingPage({ setView }: LandingPageProps) {
               >
                 查看技術文{" "}
                 <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Toolkit */}
+        <motion.div variants={item} className="h-full">
+          <Card
+            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-indigo-50/50 cursor-pointer"
+            onClick={() => setView("toolkit")}
+          >
+            <div className="h-48 overflow-hidden relative">
+              <ImageWithFallback
+                src="https://images.unsplash.com/photo-1751107756601-66fa542b0e3c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcmdhbml6ZWQlMjB0b29scyUyMHdvcmtzcGFjZSUyMGRlc2t8ZW58MXx8fHwxNzY3NzYwMDkwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                alt="Toolkit workspace"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
+                <Briefcase className="w-6 h-6 text-indigo-500" />
+              </div>
+            </div>
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800">
+                工具包
+              </h3>
+              <p className="text-stone-600 leading-relaxed">
+                實用的育兒與工作小工具。讓繁瑣的日常變得井然有序。
+              </p>
+              <Button
+                variant="ghost"
+                className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 p-0 h-auto font-medium"
+                onClick={() => setView("toolkit")}
+              >
+                使用工具 <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Aviation English */}
+        <motion.div variants={item} className="h-full">
+          <Card
+            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-sky-50/50 cursor-pointer"
+            onClick={() => setView("english")}
+          >
+            <div className="h-48 overflow-hidden relative">
+              <ImageWithFallback
+                src="https://images.unsplash.com/photo-1622818622723-b6a6dd81e918?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhaXJwbGFuZSUyMGZseWluZyUyMGluJTIwYmx1ZSUyMHNreSUyMHRyYXZlbHxlbnwxfHx8fDE3Njc3NjAwOTF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                alt="Aviation"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
+                <Plane className="w-6 h-6 text-sky-500" />
+              </div>
+            </div>
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-2xl font-bold text-stone-800">
+                航空英文
+              </h3>
+              <p className="text-stone-600 leading-relaxed">
+                跟著飛機去旅行！用輕鬆的方式學習航空相關的實用英文。
+              </p>
+              <Button
+                variant="ghost"
+                className="text-sky-600 hover:text-sky-700 hover:bg-sky-100 p-0 h-auto font-medium"
+                onClick={() => setView("english")}
+              >
+                開始學習 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </CardContent>
           </Card>

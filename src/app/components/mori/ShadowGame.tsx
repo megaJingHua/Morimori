@@ -14,6 +14,7 @@ import {
 } from "../ui/dialog";
 import { useGameTime } from '../../context/GameTimeContext';
 import { toast } from 'sonner';
+import { TimeUpOverlay } from './TimeUpOverlay';
 
 // Animal data for the game
 const ANIMALS = [
@@ -40,7 +41,7 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null); // null = answering, true = correct, false = wrong
     const [streak, setStreak] = useState(0);
     const [wrongSelection, setWrongSelection] = useState<number | null>(null); // Index of wrong selection
-    const { startTimer, stopTimer, recordGame } = useGameTime();
+    const { startTimer, stopTimer, recordGame, isTimeUp } = useGameTime();
     const startTimeRef = useRef(Date.now());
 
     useEffect(() => {
@@ -77,7 +78,7 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
     };
 
     const handleOptionClick = (selected: typeof ANIMALS[0], index: number) => {
-        if (!question || isCorrect === true) return;
+        if (!question || isCorrect !== null) return;
 
         if (selected.emoji === question.target.emoji) {
             // Correct
@@ -113,6 +114,10 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
         });
         onExit();
     };
+
+    if (isTimeUp) {
+        return <TimeUpOverlay onExit={onExit} />;
+    }
 
     if (!question) return null;
 

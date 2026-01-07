@@ -14,6 +14,7 @@ import {
 } from "../ui/dialog";
 import { useGameTime } from '../../context/GameTimeContext';
 import { toast } from 'sonner';
+import { TimeUpOverlay } from './TimeUpOverlay';
 
 // Emojis for counting
 const COUNTING_EMOJIS = ["🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🍒", "🍑", "🍍", "🥥", "🥝", "🍅", "🥑"];
@@ -32,7 +33,7 @@ export function MathGarden({ onExit }: { onExit: () => void }) {
     const [score, setScore] = useState(0);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null); // null = answering, true = correct, false = wrong
     const [streak, setStreak] = useState(0);
-    const { startTimer, stopTimer, recordGame } = useGameTime();
+    const { startTimer, stopTimer, recordGame, isTimeUp } = useGameTime();
     const startTimeRef = useRef(Date.now());
 
     useEffect(() => {
@@ -121,6 +122,10 @@ export function MathGarden({ onExit }: { onExit: () => void }) {
         });
         onExit();
     };
+
+    if (isTimeUp) {
+        return <TimeUpOverlay onExit={onExit} />;
+    }
 
     if (!problem) return null;
 

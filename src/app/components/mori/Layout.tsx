@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, User, BookOpen, Gamepad2, Code, Menu, X, Briefcase, LogOut, Sparkles } from 'lucide-react';
+import { Home, User, BookOpen, Gamepad2, Code, Menu, X, Briefcase, LogOut, Sparkles, Plane } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -31,6 +31,7 @@ export function Layout({ children, currentView, setView }: LayoutProps) {
     { id: 'games', label: '遊戲區', icon: Gamepad2 },
     { id: 'toolkit', label: '工具包', icon: Briefcase },
     { id: 'tech', label: '技術筆記', icon: Code },
+    { id: 'english', label: '航空英文', icon: Plane },
   ];
 
   const handleNavClick = (view: string) => {

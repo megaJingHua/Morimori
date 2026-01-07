@@ -374,8 +374,14 @@ app.post("/make-server-92f3175c/game/record", async (c) => {
       };
 
       records.unshift(newRecord); // Add to beginning
-      // Keep only last 50 records to save space
-      if (records.length > 50) records = records.slice(0, 50);
+
+      // Filter out records older than 3 days
+      const threeDaysAgo = new Date();
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+      records = records.filter((r: any) => new Date(r.date) > threeDaysAgo);
+      
+      // Keep a safety limit
+      if (records.length > 200) records = records.slice(0, 200);
 
       await kv.set(key, JSON.stringify(records));
       return c.json({ success: true, record: newRecord });
@@ -406,7 +412,21 @@ app.get("/make-server-92f3175c/game/records", async (c) => {
       } else if (Array.isArray(recordsRaw)) {
           records = recordsRaw;
       }
-      return c.json({ records });
+
+      // Filter out records older than 3 days
+      const threeDaysAgo = new Date();
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+      
+      const validRecords = records.filter((r: any) => new Date(r.date) > threeDaysAgo);
+      
+      // If we filtered out anything, update the DB to clean up (Lazy Deletion)
+      if (validRecords.length < records.length) {
+          // Verify we are not deleting everything by mistake if date parsing fails?
+          // Assuming date format is ISO string which works fine.
+          await kv.set(key, JSON.stringify(validRecords));
+      }
+
+      return c.json({ records: validRecords });
   } catch (error) {
       console.error("Error fetching game records:", error);
       return c.json({ error: "Failed to fetch records" }, 500);

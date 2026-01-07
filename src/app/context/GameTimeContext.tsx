@@ -80,7 +80,8 @@ export function GameTimeProvider({ children }: { children: React.ReactNode }) {
   const startTimer = () => setIsPlaying(true);
   const stopTimer = () => setIsPlaying(false);
 
-  const isTimeUp = timeUsed >= dailyLimit * 60;
+  // Only enforce time limit if user is logged in
+  const isTimeUp = user ? timeUsed >= dailyLimit * 60 : false;
 
   const saveSettings = async (settings: { dailyLimit?: number; birthday?: string; name?: string }) => {
       if (settings.dailyLimit !== undefined) {
