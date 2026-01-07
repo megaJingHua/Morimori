@@ -7,6 +7,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { ENGLISH_ARTICLES, EnglishArticle, BreakdownSegment } from '../../data/englishArticles';
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { toast } from 'sonner';
 
 export function EnglishSection() {
@@ -94,51 +95,153 @@ function EnglishArticleView({ article, onBack }: { article: EnglishArticle; onBa
     // Helper to render text with interactive highlights
     const renderInteractiveText = () => {
         let text = article.fullText;
-        const parts: { text: string; segmentId?: string }[] = [];
-        
-        // This is a simplified approach. In a real app, we'd need more robust matching 
-        // to handle overlapping or identical sentences.
-        // We assume segments are unique enough.
-        
-        let remainingText = text;
-        const segmentsToProcess = [...article.segments].sort((a, b) => text.indexOf(a.originalText) - text.indexOf(b.originalText));
+        // If no sentence translations, fallback to old segment-only logic or just return text
+        if (!article.sentenceTranslations) {
+             return <div className="whitespace-pre-wrap leading-loose text-lg text-stone-700 font-serif">{text}</div>;
+        }
 
-        let lastIndex = 0;
+        const matches: { start: number; end: number; text: string; segmentId?: string; translation: string }[] = [];
         
-        segmentsToProcess.forEach(seg => {
-            const index = text.indexOf(seg.originalText, lastIndex);
-            if (index !== -1) {
-                // Add text before the segment
-                if (index > lastIndex) {
-                    parts.push({ text: text.substring(lastIndex, index) });
+        // Helper to find matching segment for a sentence using loose matching
+        const findSegmentId = (sentence: string) => {
+            const cleanSentence = sentence.trim();
+            
+            // Pre-process: remove trailing punctuation from segment text for matching
+            // Also normalize spaces to avoid issues with multiple spaces or newlines
+            const normalize = (str: string) => str.trim().replace(/[.,;!?]+$/, '').replace(/\s+/g, ' ');
+
+            // 1. Try exact or substring match with normalized text
+            const exactOrSubstring = article.segments.find(s => {
+                const segText = normalize(s.originalText);
+                return cleanSentence.includes(segText) || segText.includes(cleanSentence);
+            });
+            if (exactOrSubstring) return exactOrSubstring.id;
+
+            // 2. Fuzzy regex match
+            for (const seg of article.segments) {
+                try {
+                    // Remove trailing punctuation before building regex
+                    const segText = normalize(seg.originalText);
+                    
+                    // Escape special regex chars
+                    const escapedSeg = segText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    
+                    // Allow loose matching for spaces/insertions
+                    // Replace spaces with pattern allowing for any content (up to 50 chars)
+                    const patternStr = escapedSeg.replace(/\s+/g, '[\\s\\S]{1,50}'); 
+                    const regex = new RegExp(patternStr, 'i');
+                    
+                    if (regex.test(cleanSentence)) {
+                        return seg.id;
+                    }
+                } catch (e) {
+                    console.warn('Regex matching failed for segment:', seg.id);
                 }
-                // Add the segment
-                parts.push({ text: seg.originalText, segmentId: seg.id });
-                lastIndex = index + seg.originalText.length;
             }
+            
+            return undefined;
+        };
+        
+        // 2. Identify all sentences to be highlighted
+        const sentences = Object.keys(article.sentenceTranslations);
+        
+        sentences.forEach(sentenceText => {
+            const cleanSentence = sentenceText.trim();
+            if (!cleanSentence) return;
+
+            let searchPos = 0;
+            // Find all occurrences
+            while (true) {
+                const idx = text.indexOf(cleanSentence, searchPos);
+                if (idx === -1) break;
+                
+                // Check if this range is already covered
+                const isOverlapping = matches.some(m => 
+                    (idx >= m.start && idx < m.end) || 
+                    (idx + cleanSentence.length > m.start && idx + cleanSentence.length <= m.end)
+                );
+
+                if (!isOverlapping) {
+                    matches.push({
+                        start: idx,
+                        end: idx + cleanSentence.length,
+                        text: cleanSentence,
+                        segmentId: findSegmentId(cleanSentence),
+                        translation: article.sentenceTranslations?.[sentenceText] || ''
+                    });
+                }
+                
+                searchPos = idx + cleanSentence.length;
+            }
+        });
+
+        // 3. Sort matches by position
+        matches.sort((a, b) => a.start - b.start);
+
+        // 4. Build the result array
+        const elements: React.ReactNode[] = [];
+        let lastIndex = 0;
+
+        matches.forEach((match, i) => {
+            // Add text before the match
+            if (match.start > lastIndex) {
+                elements.push(<span key={`text-${i}`}>{text.substring(lastIndex, match.start)}</span>);
+            }
+
+            // Add the interactive sentence
+            const isSegment = !!match.segmentId;
+            
+            elements.push(
+                <Tooltip key={`tooltip-${i}`} delayDuration={0}>
+                    <TooltipTrigger asChild>
+                        <span 
+                            onClick={(e) => {
+                                if (isSegment && match.segmentId) {
+                                    scrollToSegment(match.segmentId);
+                                }
+                            }}
+                            className={`
+                                cursor-pointer rounded-sm px-0.5 transition-all duration-200 decoration-clone
+                                ${isSegment 
+                                    ? 'bg-sky-50 text-sky-900 border-b-2 border-sky-200 hover:bg-sky-100 hover:border-sky-400' 
+                                    : 'hover:bg-amber-50 hover:text-amber-900 border-b border-transparent hover:border-amber-200'}
+                            `}
+                        >
+                            {match.text}
+                        </span>
+                    </TooltipTrigger>
+                    <TooltipContent 
+                        side="top" 
+                        className="max-w-sm bg-stone-900/95 backdrop-blur-sm text-stone-50 p-4 rounded-xl shadow-xl border-none text-base z-50 animate-in fade-in zoom-in-95 duration-200"
+                        sideOffset={8}
+                    >
+                        <p className="leading-relaxed font-sans tracking-wide">
+                            {match.translation}
+                        </p>
+                        {isSegment && (
+                            <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-sky-300 font-bold uppercase tracking-wider">
+                                <span className="flex items-center gap-1.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+                                    重點解說
+                                </span>
+                                <span className="opacity-70">點擊查看詳情 ↓</span>
+                            </div>
+                        )}
+                    </TooltipContent>
+                </Tooltip>
+            );
+
+            lastIndex = match.end;
         });
 
         // Add remaining text
         if (lastIndex < text.length) {
-             parts.push({ text: text.substring(lastIndex) });
+            elements.push(<span key="text-end">{text.substring(lastIndex)}</span>);
         }
 
         return (
             <div className="whitespace-pre-wrap leading-loose text-lg text-stone-700 font-serif">
-                {parts.map((part, i) => (
-                    part.segmentId ? (
-                        <span 
-                            key={i}
-                            onClick={() => part.segmentId && scrollToSegment(part.segmentId)}
-                            className="bg-sky-50 text-sky-900 border-b-2 border-sky-200 cursor-pointer hover:bg-sky-100 hover:border-sky-400 transition-colors px-1 rounded-sm"
-                            title="點擊查看解說"
-                        >
-                            {part.text}
-                        </span>
-                    ) : (
-                        <span key={i}>{part.text}</span>
-                    )
-                ))}
+                {elements}
             </div>
         );
     };
@@ -170,6 +273,26 @@ function EnglishArticleView({ article, onBack }: { article: EnglishArticle; onBa
                 </div>
             </div>
 
+            {/* Featured Image */}
+            <div className="rounded-[2rem] overflow-hidden shadow-sm border border-stone-100 bg-stone-50">
+                <div className="aspect-video md:aspect-[21/9] relative">
+                     <ImageWithFallback src={article.image} alt={article.title} className="w-full h-full object-cover" />
+                </div>
+                {(article.imageCredit || article.imageSourceUrl) && (
+                    <div className="px-6 py-3 text-xs text-stone-500 flex flex-wrap items-center justify-between gap-2 border-t border-stone-100">
+                         <span className="flex items-center gap-2">
+                            <span className="font-semibold text-stone-400">©</span>
+                            {article.imageCredit}
+                         </span>
+                         {article.imageSourceUrl && (
+                             <a href={article.imageSourceUrl} target="_blank" rel="noreferrer" className="text-sky-600 hover:text-sky-700 hover:underline flex items-center gap-1">
+                                Source <ArrowRight className="w-3 h-3" />
+                             </a>
+                         )}
+                    </div>
+                )}
+            </div>
+
             {/* 1. Original Reading Area */}
             <section className="md:bg-white md:rounded-[2rem] md:p-10 md:shadow-sm md:border md:border-stone-100">
                 <div className="flex items-center gap-2 mb-6 text-stone-400 text-xs font-bold uppercase tracking-wider">
@@ -179,7 +302,7 @@ function EnglishArticleView({ article, onBack }: { article: EnglishArticle; onBa
                 {renderInteractiveText()}
                 <div className="mt-6 text-xs text-center text-stone-400 flex items-center justify-center gap-2">
                     <Lightbulb className="w-3 h-3" />
-                    <span>小提示：點擊上方有底線的句子，可以查看詳細解說喔！</span>
+                    <span>小提示：電腦版懸停、手機版輕觸句子即可查看中文翻譯；有底線的句子可點擊查看詳細解說！</span>
                 </div>
             </section>
 
