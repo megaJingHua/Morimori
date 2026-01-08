@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, supabase } from './context/AuthContext';
 import { GameTimeProvider } from './context/GameTimeContext';
 import { Layout } from './components/mori/Layout';
@@ -9,9 +10,12 @@ import { TechSection } from './components/mori/TechSection';
 import { MemberSection } from './components/mori/MemberSection';
 import { ToolkitSection } from './components/mori/ToolkitSection';
 import { EnglishSection } from './components/mori/EnglishSection';
+import AdminDashboard from './pages/AdminDashboard';
 
-export default function App() {
-  const [currentView, setCurrentView] = useState('landing');
+// Wrapper to handle auth events and layout
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [pendingResetPassword, setPendingResetPassword] = useState(false);
 
   useEffect(() => {
@@ -19,41 +23,55 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setPendingResetPassword(true);
-        setCurrentView('member');
+        navigate('/member');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
-  const renderView = () => {
-    switch (currentView) {
-      case 'landing':
-        return <LandingPage setView={setCurrentView} />;
-      case 'parenting':
-        return <ParentingSection />;
-      case 'games':
-        return <GameSection />;
-      case 'toolkit':
-        return <ToolkitSection setView={setCurrentView} />;
-      case 'tech':
-        return <TechSection />;
-      case 'english':
-        return <EnglishSection />;
-      case 'member':
-        return <MemberSection defaultShowResetPassword={pendingResetPassword} />;
-      default:
-        return <LandingPage setView={setCurrentView} />;
-    }
+  // Determine current view for Layout based on path
+  const getCurrentView = () => {
+    const path = location.pathname;
+    if (path === '/') return 'landing';
+    return path.substring(1); // e.g. /games -> games
   };
 
   return (
-    <AuthProvider>
-      <GameTimeProvider>
-        <Layout currentView={currentView} setView={setCurrentView}>
-          {renderView()}
-        </Layout>
-      </GameTimeProvider>
-    </AuthProvider>
+    <Routes>
+      <Route path="/admin" element={<AdminDashboard onBack={() => navigate('/member')} />} />
+      <Route
+        path="*"
+        element={
+          <Layout currentView={getCurrentView()}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/parenting" element={<ParentingSection />} />
+              <Route path="/games" element={<GameSection />} />
+              <Route path="/toolkit" element={<ToolkitSection />} />
+              <Route path="/tech" element={<TechSection />} />
+              <Route path="/english" element={<EnglishSection />} />
+              <Route 
+                path="/member" 
+                element={<MemberSection defaultShowResetPassword={pendingResetPassword} />} 
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Layout>
+        }
+      />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <GameTimeProvider>
+          <AppContent />
+        </GameTimeProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

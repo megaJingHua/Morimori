@@ -9,7 +9,9 @@ import { useGameTime } from '../../context/GameTimeContext';
 import { useAuth } from '../../context/AuthContext';
 import { MathGarden } from './MathGarden';
 import { ShadowGame } from './ShadowGame';
+import { ColorGame } from './ColorGame';
 import { TimeUpOverlay } from './TimeUpOverlay';
+import { playCorrectSound, playWrongSound } from '../../utils/gameAudio';
 
 // Use static asset path instead of Figma import
 const forestBg = '/Morimori/assets/forest-bg.png';
@@ -61,6 +63,15 @@ const GAMES: Game[] = [
     time: '5 分',
     image: '/Morimori/assets/shadow-game-cover.png',
     color: 'bg-orange-100 text-orange-800'
+  },
+  {
+    id: 'color',
+    title: '色彩抓抓樂',
+    description: '認識顏色好簡單！幫森林裡的氣球找到正確的顏色。',
+    age: '2-4 歲',
+    time: '5 分',
+    image: '/Morimori/assets/color-game-cover.png',
+    color: 'bg-rose-100 text-rose-800'
   }
 ];
 
@@ -120,6 +131,10 @@ export function GameSection() {
     return <ShadowGame onExit={() => setActiveGame(null)} />;
   }
 
+  if (activeGame === 'color') {
+    return <ColorGame onExit={() => setActiveGame(null)} />;
+  }
+
   const { user } = useAuth();
 
   return (
@@ -164,7 +179,7 @@ export function GameSection() {
           >
             <Card className="h-full border-none shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
               <div className="aspect-[4/3] relative">
-                {game.id === 'shadow' ? (
+                {game.id === 'shadow' || game.id === 'color' ? (
                    <div className="w-full h-full relative">
                       <ImageWithFallback 
                         src={forestBg}
@@ -172,6 +187,15 @@ export function GameSection() {
                         className="w-full h-full object-cover"
                       />
                       {/* Overlay to ensure text readability if needed, or keeping it clean */}
+                      {game.id === 'color' && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-[2px]">
+                                <div className="flex gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-red-400 shadow-lg animate-bounce" style={{ animationDelay: '0s' }}></div>
+                                    <div className="w-8 h-8 rounded-full bg-yellow-400 shadow-lg animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                    <div className="w-8 h-8 rounded-full bg-blue-400 shadow-lg animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                </div>
+                          </div>
+                      )}
                    </div>
                 ) : (
                     <ImageWithFallback 
@@ -333,6 +357,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
 
     if (firstCard?.animalIndex === secondCard?.animalIndex) {
       // Match!
+      playCorrectSound();
       setTimeout(() => {
         const matchedCards = currentCards.map(c => 
           c.id === firstId || c.id === secondId 
@@ -357,6 +382,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
       }, 300); // Faster match animation
     } else {
       // No match
+      playWrongSound();
       setTimeout(() => {
         const resetCards = currentCards.map(c => 
           c.id === firstId || c.id === secondId 

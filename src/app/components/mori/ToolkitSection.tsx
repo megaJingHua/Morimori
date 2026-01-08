@@ -17,13 +17,10 @@ import {
   DialogFooter,
 } from "../ui/dialog";
 
-interface ToolkitSectionProps {
-  setView: (view: string) => void;
-}
+import { useNavigate } from 'react-router-dom';
 
-const SERVER_URL = `https://${projectId}.supabase.co/functions/v1/make-server-92f3175c`;
-
-export function ToolkitSection({ setView }: ToolkitSectionProps) {
+export function ToolkitSection() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -151,7 +148,7 @@ export function ToolkitSection({ setView }: ToolkitSectionProps) {
                 <Button 
                     onClick={() => {
                         setShowLoginPrompt(false);
-                        setView('member');
+                        navigate('/member');
                     }} 
                     className="w-full h-12 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 rounded-xl"
                 >

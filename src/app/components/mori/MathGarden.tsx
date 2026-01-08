@@ -15,6 +15,7 @@ import {
 import { useGameTime } from '../../context/GameTimeContext';
 import { toast } from 'sonner';
 import { TimeUpOverlay } from './TimeUpOverlay';
+import { playCorrectSound, playWrongSound } from '../../utils/gameAudio';
 
 // Emojis for counting
 const COUNTING_EMOJIS = ["🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🍒", "🍑", "🍍", "🥥", "🥝", "🍅", "🥑"];
@@ -91,6 +92,7 @@ export function MathGarden({ onExit }: { onExit: () => void }) {
             setIsCorrect(true);
             setScore(s => s + 10);
             setStreak(s => s + 1);
+            playCorrectSound();
             
             // Audio feedback could go here
             
@@ -100,6 +102,7 @@ export function MathGarden({ onExit }: { onExit: () => void }) {
             }, 1500);
         } else {
             // Wrong
+            playWrongSound();
             setIsCorrect(false);
             setStreak(0);
             toast.error("再試試看喔！加油！");

@@ -19,17 +19,15 @@ import { ARTICLES } from '../../data/articles';
 import { ALL_TECH_ARTICLES } from '../../data/techArticles';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { ArticleDetail } from './ArticleDetail';
+import * as moriDb from '../../services/moriDb';
 import { getZodiac } from '../../utils/zodiac';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
-export function MemberSection({ defaultShowResetPassword = false }: { defaultShowResetPassword?: boolean }) {
+interface MemberSectionProps {
+  defaultShowResetPassword?: boolean;
+}
+
+export function MemberSection({ defaultShowResetPassword = false }: MemberSectionProps) {
   const { user, loading, signOut, session, supabase } = useAuth();
   const { dailyLimit, setDailyLimit, timeUsed, saveSettings } = useGameTime();
   const [authTab, setAuthTab] = useState('login');
@@ -145,7 +143,18 @@ export function MemberSection({ defaultShowResetPassword = false }: { defaultSho
 
   useEffect(() => {
       const fetchUserData = async () => {
-          if (!session?.access_token) return;
+          if (!session?.access_token || !user) return;
+          
+          // Try to register user in KV system (checks limits)
+          if (user.email) {
+            const regResult = await moriDb.registerUser(user.id, user.email);
+            if (!regResult.success) {
+                toast.error(regResult.message);
+                // Optional: Force logout if registration limits reached and strict mode is desired
+                // But for now, we just warn them. They might be able to read but not save.
+            }
+          }
+
           setIsLoadingCollections(true);
           try {
               // Likes
@@ -305,6 +314,9 @@ export function MemberSection({ defaultShowResetPassword = false }: { defaultSho
                   setUserCollections(prev => prev.filter(cid => cid !== id.toString()));
                   toast.info("已取消收藏");
               }
+          } else {
+              const data = await response.json();
+              toast.error(data.error || "操作失敗");
           }
       } catch (e) { console.error(e); }
   };
@@ -673,9 +685,20 @@ export function MemberSection({ defaultShowResetPassword = false }: { defaultSho
                 <h2 className="text-4xl font-bold text-stone-800 tracking-tight">家長設定中心</h2>
                 <p className="text-stone-500 mt-2 text-lg">歡迎回來，今天想為孩子紀錄什麼呢？</p>
             </div>
-            <Button variant="outline" onClick={handleSignOut} className="rounded-full px-6 text-stone-500 hover:text-red-600 hover:bg-red-50 border-stone-200">
-                <LogOut className="w-4 h-4 mr-2" /> 登出
-            </Button>
+            <div className="flex items-center gap-2">
+                {user.email === 'h12732u@gmail.com' && setView && (
+                    <Button 
+                        variant="outline" 
+                        onClick={() => setView('admin')}
+                        className="rounded-full px-6 text-stone-500 hover:text-emerald-600 hover:bg-emerald-50 border-stone-200"
+                    >
+                        <Shield className="w-4 h-4 mr-2" /> 後台管理
+                    </Button>
+                )}
+                <Button variant="outline" onClick={handleSignOut} className="rounded-full px-6 text-stone-500 hover:text-red-600 hover:bg-red-50 border-stone-200">
+                    <LogOut className="w-4 h-4 mr-2" /> 登出
+                </Button>
+            </div>
        </div>
 
        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 md:px-0">

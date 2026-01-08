@@ -15,6 +15,7 @@ import {
 import { useGameTime } from '../../context/GameTimeContext';
 import { toast } from 'sonner';
 import { TimeUpOverlay } from './TimeUpOverlay';
+import { playCorrectSound, playWrongSound } from '../../utils/gameAudio';
 
 // Animal data for the game
 const ANIMALS = [
@@ -85,6 +86,7 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
             setIsCorrect(true);
             setScore(s => s + 10);
             setStreak(s => s + 1);
+            playCorrectSound();
             
             // Wait then next question
             setTimeout(() => {
@@ -92,6 +94,7 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
             }, 1500);
         } else {
             // Wrong
+            playWrongSound();
             setIsCorrect(false);
             setWrongSelection(index);
             setStreak(0);
@@ -205,11 +208,11 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
                             onClick={() => handleOptionClick(option, index)}
                             disabled={isCorrect === true}
                             whileTap={{ scale: 0.9 }}
-                            animate={wrongSelection === index ? { x: [-10, 10, -10, 10, 0], backgroundColor: "#fee2e2" } : {}}
+                            animate={wrongSelection === index ? { x: [-10, 10, -10, 10, 0] } : {}}
                             className={`
-                                aspect-square rounded-2xl border-b-4 transition-all shadow-sm flex flex-col items-center justify-center gap-2 bg-white
+                                aspect-square rounded-2xl border-b-4 transition-all shadow-sm flex flex-col items-center justify-center gap-2
                                 ${isCorrect === true && option.emoji !== question.target.emoji ? 'opacity-50 grayscale' : ''}
-                                ${wrongSelection === index ? 'border-red-300' : 'border-stone-200 hover:bg-orange-50 hover:border-orange-200'}
+                                ${wrongSelection === index ? 'border-red-300 bg-[#fee2e2]' : 'border-stone-200 hover:bg-orange-50 hover:border-orange-200 bg-white'}
                             `}
                         >
                             <span className="text-5xl md:text-6xl">{option.emoji}</span>

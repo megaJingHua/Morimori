@@ -312,6 +312,13 @@ app.post("/make-server-92f3175c/articles/:id/collect", async (c) => {
     if (collected) {
       userCollections = userCollections.filter((id) => id !== articleId);
     } else {
+      // Check Limit
+      const settingsRaw = await kv.get("global:system_settings");
+      const limit = settingsRaw?.maxBookmarksPerUser || 10;
+      
+      if (userCollections.length >= limit) {
+        return c.json({ error: `Bookmark limit reached (Max: ${limit})` }, 403);
+      }
       userCollections.push(articleId);
     }
     
@@ -659,6 +666,104 @@ app.post("/make-server-92f3175c/calendar/events", async (c) => {
       console.error("Error saving calendar events:", error);
       return c.json({ error: "Failed to save events" }, 500);
   }
+});
+
+// ----------------------------------------------------------------------------
+// ADMIN & SYSTEM ROUTES
+// ----------------------------------------------------------------------------
+
+const ADMIN_EMAIL = 'h12732u@gmail.com';
+const DEFAULT_SETTINGS = {
+  maxUsers: 50,
+  maxBookmarksPerUser: 10,
+};
+
+// Get System Settings (Admin Only)
+app.get("/make-server-92f3175c/admin/system-settings", async (c) => {
+    const accessToken = getAccessToken(c);
+    const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+    const { data: { user } } = await supabase.auth.getUser(accessToken);
+    
+    if (user?.email !== ADMIN_EMAIL) {
+        return c.json({ error: "Unauthorized: Admin only" }, 403);
+    }
+
+    try {
+        const settings = await kv.get("global:system_settings");
+        return c.json(settings || DEFAULT_SETTINGS);
+    } catch (e) {
+        return c.json(DEFAULT_SETTINGS);
+    }
+});
+
+// Save System Settings (Admin Only)
+app.post("/make-server-92f3175c/admin/system-settings", async (c) => {
+    const accessToken = getAccessToken(c);
+    const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+    const { data: { user } } = await supabase.auth.getUser(accessToken);
+    
+    if (user?.email !== ADMIN_EMAIL) {
+        return c.json({ error: "Unauthorized: Admin only" }, 403);
+    }
+
+    const settings = await c.req.json();
+    await kv.set("global:system_settings", settings);
+    return c.json({ success: true });
+});
+
+// Get All Users (Admin Only)
+app.get("/make-server-92f3175c/admin/users", async (c) => {
+    const accessToken = getAccessToken(c);
+    const supabase = getSupabase(Deno.env.get('SUPABASE_ANON_KEY') || '');
+    const { data: { user } } = await supabase.auth.getUser(accessToken);
+    
+    if (user?.email !== ADMIN_EMAIL) {
+        return c.json({ error: "Unauthorized: Admin only" }, 403);
+    }
+
+    try {
+        const userIds = await kv.get("global:user_index");
+        return c.json({ userIds: Array.isArray(userIds) ? userIds : [] });
+    } catch (e) {
+        return c.json({ userIds: [] });
+    }
+});
+
+// Register User (Check Limits)
+app.post("/make-server-92f3175c/user/register", async (c) => {
+    const { userId, email } = await c.req.json();
+    if (!userId) return c.json({ error: "Missing userId" }, 400);
+
+    try {
+        // 1. Get User Index
+        let userIds = await kv.get("global:user_index");
+        if (!Array.isArray(userIds)) userIds = [];
+
+        // 2. Check if already registered
+        if (userIds.includes(userId)) {
+            return c.json({ success: true, message: "Welcome back" });
+        }
+
+        // 3. Check Limit
+        const settingsRaw = await kv.get("global:system_settings");
+        const settings = settingsRaw || DEFAULT_SETTINGS;
+
+        if (userIds.length >= settings.maxUsers) {
+            return c.json({ error: "Registration closed: Max users reached." }, 403);
+        }
+
+        // 4. Register
+        userIds.push(userId);
+        await kv.set("global:user_index", userIds);
+
+        // Optional: Initialize user profile in KV if needed, but we use Supabase Auth for profile mainly.
+        // We can store a mapping or metadata here if we want.
+
+        return c.json({ success: true, message: "User registered successfully" });
+    } catch (error) {
+        console.error("Register error:", error);
+        return c.json({ error: "Registration failed" }, 500);
+    }
 });
 
 Deno.serve(app.fetch);
