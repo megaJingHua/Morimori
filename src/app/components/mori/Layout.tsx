@@ -1,8 +1,8 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Home, User, BookOpen, Gamepad2, Code, Menu, X, Briefcase, LogOut, Sparkles, Plane } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,24 +18,24 @@ import { getZodiac } from '../../utils/zodiac';
 interface LayoutProps {
   children: React.ReactNode;
   currentView: string;
+  setView: (view: string) => void;
 }
 
-export function Layout({ children, currentView }: LayoutProps) {
+export function Layout({ children, currentView, setView }: LayoutProps) {
   const { user, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const navigate = useNavigate();
 
   const navItems = [
-    { id: 'landing', label: '首頁', icon: Home, path: '/' },
-    { id: 'parenting', label: '親子文章', icon: BookOpen, path: '/parenting' },
-    { id: 'games', label: '遊戲區', icon: Gamepad2, path: '/games' },
-    { id: 'toolkit', label: '工具包', icon: Briefcase, path: '/toolkit' },
-    { id: 'tech', label: '技術筆記', icon: Code, path: '/tech' },
-    { id: 'english', label: '航空英文', icon: Plane, path: '/english' },
+    { id: 'landing', label: '首頁', icon: Home },
+    { id: 'parenting', label: '親子文章', icon: BookOpen },
+    { id: 'games', label: '遊戲區', icon: Gamepad2 },
+    { id: 'toolkit', label: '工具包', icon: Briefcase },
+    { id: 'tech', label: '技術筆記', icon: Code },
+    { id: 'english', label: '航空英文', icon: Plane },
   ];
 
-  const handleNavClick = (path: string) => {
-    navigate(path);
+  const handleNavClick = (view: string) => {
+    setView(view);
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -51,7 +51,7 @@ export function Layout({ children, currentView }: LayoutProps) {
           {/* Logo */}
           <div 
             className="flex items-center gap-2 cursor-pointer" 
-            onClick={() => handleNavClick('/')}
+            onClick={() => handleNavClick('landing')}
           >
             <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">
                 M
@@ -66,7 +66,7 @@ export function Layout({ children, currentView }: LayoutProps) {
             {navItems.map(item => (
                 <button
                     key={item.id}
-                    onClick={() => handleNavClick(item.path)}
+                    onClick={() => handleNavClick(item.id)}
                     className={`
                         relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300
                         ${currentView === item.id 
@@ -103,7 +103,7 @@ export function Layout({ children, currentView }: LayoutProps) {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56 p-2 rounded-2xl shadow-xl border-stone-100/50 bg-white/95 backdrop-blur-sm" align="end" forceMount>
-                        <DropdownMenuItem onClick={() => handleNavClick('/member')} className="rounded-lg p-2.5 cursor-pointer focus:bg-emerald-50 focus:text-emerald-700 text-stone-600">
+                        <DropdownMenuItem onClick={() => handleNavClick('member')} className="rounded-lg p-2.5 cursor-pointer focus:bg-emerald-50 focus:text-emerald-700 text-stone-600">
                             <User className="mr-3 h-4 w-4" />
                             <span className="font-medium">會員中心</span>
                         </DropdownMenuItem>
@@ -118,7 +118,7 @@ export function Layout({ children, currentView }: LayoutProps) {
                 <Button 
                     variant="outline" 
                     className="rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
-                    onClick={() => handleNavClick('/member')}
+                    onClick={() => handleNavClick('member')}
                 >
                     <User className="w-4 h-4 mr-1.5" />
                     <span className="hidden sm:inline">登入 / 註冊</span>
@@ -142,7 +142,7 @@ export function Layout({ children, currentView }: LayoutProps) {
                         {navItems.map(item => (
                             <button
                                 key={item.id}
-                                onClick={() => handleNavClick(item.path)}
+                                onClick={() => handleNavClick(item.id)}
                                 className={`
                                     flex items-center gap-4 px-4 py-3 rounded-xl text-lg font-medium transition-colors
                                     ${currentView === item.id 
@@ -163,7 +163,17 @@ export function Layout({ children, currentView }: LayoutProps) {
 
       {/* Main Content */}
       <main className="pt-20 px-4 md:px-8 pb-16 max-w-7xl mx-auto min-h-[calc(100vh-4rem)]">
-         {children}
+         <AnimatePresence mode="wait">
+            <motion.div
+                key={currentView}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+            >
+                {children}
+            </motion.div>
+         </AnimatePresence>
       </main>
 
       {/* Footer */}

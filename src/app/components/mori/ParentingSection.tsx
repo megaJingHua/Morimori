@@ -17,42 +17,17 @@ import {
 } from "../ui/dropdown-menu";
 import { toast } from "sonner";
 import { useAuth } from '../../context/AuthContext';
-import { useParams, useNavigate } from 'react-router-dom';
 import { ARTICLES } from '../../data/articles';
 import { ArticleDetail } from './ArticleDetail';
 
 export function ParentingSection() {
   const { user, session } = useAuth();
-  const { articleId } = useParams();
-  const navigate = useNavigate();
-  
-  const selectedArticleId = articleId ? parseInt(articleId) : null;
-  
+  const [selectedArticleId, setSelectedArticleId] = useState<number | null>(null);
   const [readCounts, setReadCounts] = useState<Record<string, number>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [collectionCounts, setCollectionCounts] = useState<Record<string, number>>({});
   const [userLikes, setUserLikes] = useState<string[]>([]);
   const [userCollections, setUserCollections] = useState<string[]>([]);
-
-  // Record view count when article is selected
-  useEffect(() => {
-    if (selectedArticleId) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        const recordView = async () => {
-            try {
-                const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${selectedArticleId}/view`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${publicAnonKey}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setReadCounts(prev => ({ ...prev, [selectedArticleId]: data.count }));
-                }
-            } catch (e) { console.error(e); }
-        };
-        recordView();
-    }
-  }, [selectedArticleId]);
 
   // Fetch read counts, like counts, and collection counts on mount
   useEffect(() => {
@@ -131,8 +106,19 @@ export function ParentingSection() {
       }
   }, [user, session]);
 
-  const handleArticleClick = (id: number) => {
-      navigate(`/parenting/${id}`);
+  const handleArticleClick = async (id: number) => {
+      setSelectedArticleId(id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      try {
+          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/view`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+          });
+          if (response.ok) {
+              const data = await response.json();
+              setReadCounts(prev => ({ ...prev, [id]: data.count }));
+          }
+      } catch (e) { console.error(e); }
   }
 
   const handleToggleLike = async (id: number) => {
@@ -230,7 +216,7 @@ export function ParentingSection() {
         isCollected={userCollections.includes(selectedArticleId.toString())}
         onToggleLike={() => handleToggleLike(selectedArticleId)}
         onToggleCollection={() => handleToggleCollection(selectedArticleId)}
-        onBack={() => navigate('/parenting')} 
+        onBack={() => setSelectedArticleId(null)} 
       />
     );
   }

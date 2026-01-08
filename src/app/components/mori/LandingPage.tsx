@@ -25,10 +25,11 @@ const parentingImage = "/Morimori/assets/landing-parenting.png";
 const parentingGamesImage = "/Morimori/assets/landing-games.png";
 const technicalImage = "/Morimori/assets/landing-tech.png";
 
-import { useNavigate } from "react-router-dom";
+interface LandingPageProps {
+  setView: (view: string) => void;
+}
 
-export function LandingPage() {
-  const navigate = useNavigate();
+export function LandingPage({ setView }: LandingPageProps) {
   const [visitCount, setVisitCount] = useState<number | null>(
     null,
   );
@@ -164,7 +165,7 @@ export function LandingPage() {
         <motion.div variants={item} className="h-full">
           <Card
             className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-orange-50/50 cursor-pointer"
-            onClick={() => navigate("/parenting")}
+            onClick={() => setView("parenting")}
           >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
@@ -186,7 +187,7 @@ export function LandingPage() {
               <Button
                 variant="ghost"
                 className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 p-0 h-auto font-medium"
-                onClick={() => navigate("/parenting")}
+                onClick={() => setView("parenting")}
               >
                 開始閱讀 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
@@ -198,7 +199,7 @@ export function LandingPage() {
         <motion.div variants={item} className="h-full">
           <Card
             className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-emerald-50/50 cursor-pointer"
-            onClick={() => navigate("/games")}
+            onClick={() => setView("games")}
           >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
@@ -221,7 +222,7 @@ export function LandingPage() {
               <Button
                 variant="ghost"
                 className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 p-0 h-auto font-medium"
-                onClick={() => navigate("/games")}
+                onClick={() => setView("games")}
               >
                 去玩遊戲 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
@@ -233,7 +234,7 @@ export function LandingPage() {
         <motion.div variants={item} className="h-full">
           <Card
             className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-slate-50/50 cursor-pointer"
-            onClick={() => navigate("/tech")}
+            onClick={() => setView("tech")}
           >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
@@ -255,7 +256,7 @@ export function LandingPage() {
               <Button
                 variant="ghost"
                 className="text-slate-600 hover:text-slate-700 hover:bg-slate-100 p-0 h-auto font-medium"
-                onClick={() => navigate("/tech")}
+                onClick={() => setView("tech")}
               >
                 查看技術文{" "}
                 <ArrowRight className="w-4 h-4 ml-1" />
@@ -268,7 +269,7 @@ export function LandingPage() {
         <motion.div variants={item} className="h-full">
           <Card
             className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-indigo-50/50 cursor-pointer"
-            onClick={() => navigate("/toolkit")}
+            onClick={() => setView("toolkit")}
           >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
@@ -290,7 +291,7 @@ export function LandingPage() {
               <Button
                 variant="ghost"
                 className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 p-0 h-auto font-medium"
-                onClick={() => navigate("/toolkit")}
+                onClick={() => setView("toolkit")}
               >
                 使用工具 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
@@ -302,7 +303,7 @@ export function LandingPage() {
         <motion.div variants={item} className="h-full">
           <Card
             className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-sky-50/50 cursor-pointer"
-            onClick={() => navigate("/english")}
+            onClick={() => setView("english")}
           >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
@@ -324,7 +325,7 @@ export function LandingPage() {
               <Button
                 variant="ghost"
                 className="text-sky-600 hover:text-sky-700 hover:bg-sky-100 p-0 h-auto font-medium"
-                onClick={() => navigate("/english")}
+                onClick={() => setView("english")}
               >
                 開始學習 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { User, Settings, Clock, Award, Star, Shield, Lock, Mail, Loader2, LogOut, Bookmark, Heart, Calendar, Eye, EyeOff, ArrowLeft, Gamepad2, Save, Edit2, Check, X, Unlock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
@@ -26,10 +25,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 
 interface MemberSectionProps {
   defaultShowResetPassword?: boolean;
+  setView?: (view: string) => void;
 }
 
-export function MemberSection({ defaultShowResetPassword = false }: MemberSectionProps) {
-  const navigate = useNavigate();
+export function MemberSection({ defaultShowResetPassword = false, setView }: MemberSectionProps) {
   const { user, loading, signOut, session, supabase } = useAuth();
   const { dailyLimit, setDailyLimit, timeUsed, saveSettings } = useGameTime();
   const [authTab, setAuthTab] = useState('login');
@@ -688,10 +687,10 @@ export function MemberSection({ defaultShowResetPassword = false }: MemberSectio
                 <p className="text-stone-500 mt-2 text-lg">歡迎回來，今天想為孩子紀錄什麼呢？</p>
             </div>
             <div className="flex items-center gap-2">
-                {user.email === 'h12732u@gmail.com' && (
+                {user.email === 'h12732u@gmail.com' && setView && (
                     <Button 
                         variant="outline" 
-                        onClick={() => navigate('/admin')}
+                        onClick={() => setView('admin')}
                         className="rounded-full px-6 text-stone-500 hover:text-emerald-600 hover:bg-emerald-50 border-stone-200"
                     >
                         <Shield className="w-4 h-4 mr-2" /> 後台管理

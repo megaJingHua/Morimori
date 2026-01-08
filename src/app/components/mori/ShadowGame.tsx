@@ -15,20 +15,20 @@ import {
 import { useGameTime } from '../../context/GameTimeContext';
 import { toast } from 'sonner';
 import { TimeUpOverlay } from './TimeUpOverlay';
-import { playCorrectSound, playWrongSound, speakText } from '../../utils/gameAudio';
+import { playCorrectSound, playWrongSound } from '../../utils/gameAudio';
 
 // Animal data for the game
 const ANIMALS = [
-    { emoji: "🐶", name: "狗狗", en: "Dog" }, { emoji: "🐱", name: "貓咪", en: "Cat" }, { emoji: "🐭", name: "老鼠", en: "Mouse" },
-    { emoji: "🐹", name: "倉鼠", en: "Hamster" }, { emoji: "🐰", name: "兔子", en: "Rabbit" }, { emoji: "🦊", name: "狐狸", en: "Fox" },
-    { emoji: "🐻", name: "熊熊", en: "Bear" }, { emoji: "🐼", name: "熊貓", en: "Panda" }, { emoji: "🐨", name: "無尾熊", en: "Koala" },
-    { emoji: "🐯", name: "老虎", en: "Tiger" }, { emoji: "🦁", name: "獅子", en: "Lion" }, { emoji: "🐮", name: "牛牛", en: "Cow" },
-    { emoji: "🐷", name: "豬豬", en: "Pig" }, { emoji: "🐸", name: "青蛙", en: "Frog" }, { emoji: "🐵", name: "猴子", en: "Monkey" },
-    { emoji: "🐔", name: "公雞", en: "Rooster" }, { emoji: "🐧", name: "企鵝", en: "Penguin" }, { emoji: "🐦", name: "小鳥", en: "Bird" },
-    { emoji: "🦆", name: "鴨子", en: "Duck" }, { emoji: "🦉", name: "貓頭鷹", en: "Owl" }, { emoji: "🐘", name: "大象", en: "Elephant" },
-    { emoji: "🐙", name: "章魚", en: "Octopus" }, { emoji: "🐢", name: "烏龜", en: "Turtle" }, { emoji: "🐝", name: "蜜蜂", en: "Bee" },
-    { emoji: "🦋", name: "蝴蝶", en: "Butterfly" }, { emoji: "🐌", name: "蝸牛", en: "Snail" }, { emoji: "🦒", name: "長頸鹿", en: "Giraffe" },
-    { emoji: "🦓", name: "斑馬", en: "Zebra" }, { emoji: "🐊", name: "鱷魚", en: "Crocodile" }, { emoji: "🦈", name: "鯊魚", en: "Shark" }
+    { emoji: "🐶", name: "狗狗" }, { emoji: "🐱", name: "貓咪" }, { emoji: "🐭", name: "老鼠" },
+    { emoji: "🐹", name: "倉鼠" }, { emoji: "🐰", name: "兔子" }, { emoji: "🦊", name: "狐狸" },
+    { emoji: "🐻", name: "熊熊" }, { emoji: "🐼", name: "熊貓" }, { emoji: "🐨", name: "無尾熊" },
+    { emoji: "🐯", name: "老虎" }, { emoji: "🦁", name: "獅子" }, { emoji: "🐮", name: "牛牛" },
+    { emoji: "🐷", name: "豬豬" }, { emoji: "🐸", name: "青蛙" }, { emoji: "🐵", name: "猴子" },
+    { emoji: "🐔", name: "公雞" }, { emoji: "🐧", name: "企鵝" }, { emoji: "🐦", name: "小鳥" },
+    { emoji: "🦆", name: "鴨子" }, { emoji: "🦉", name: "貓頭鷹" }, { emoji: "🐘", name: "大象" },
+    { emoji: "🐙", name: "章魚" }, { emoji: "🐢", name: "烏龜" }, { emoji: "🐝", name: "蜜蜂" },
+    { emoji: "🦋", name: "蝴蝶" }, { emoji: "🐌", name: "蝸牛" }, { emoji: "🦒", name: "長頸鹿" },
+    { emoji: "🦓", name: "斑馬" }, { emoji: "🐊", name: "鱷魚" }, { emoji: "🦈", name: "鯊魚" }
 ];
 
 interface Question {
@@ -87,7 +87,6 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
             setScore(s => s + 10);
             setStreak(s => s + 1);
             playCorrectSound();
-            speakText(question.target.en);
             
             // Wait then next question
             setTimeout(() => {
@@ -186,10 +185,9 @@ export function ShadowGame({ onExit }: { onExit: () => void }) {
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="absolute bottom-4 bg-orange-100 text-orange-800 px-6 py-2 rounded-full font-bold text-lg flex flex-col items-center"
+                                className="absolute bottom-4 bg-orange-100 text-orange-800 px-4 py-1 rounded-full font-bold text-lg"
                             >
-                                <span>{question.target.name}</span>
-                                <span className="text-base font-medium font-sans">{question.target.en}</span>
+                                {question.target.name}
                             </motion.div>
                         )}
                     </Card>

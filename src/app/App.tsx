@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate, Outlet, useParams } from 'react-router-dom';
 import { AuthProvider, supabase } from './context/AuthContext';
 import { GameTimeProvider } from './context/GameTimeContext';
 import { Layout } from './components/mori/Layout';
@@ -12,10 +11,8 @@ import { ToolkitSection } from './components/mori/ToolkitSection';
 import { EnglishSection } from './components/mori/EnglishSection';
 import AdminDashboard from './pages/AdminDashboard';
 
-// Wrapper to handle auth events and layout persistence
-function AppContent() {
-  const navigate = useNavigate();
-  const location = useLocation();
+export default function App() {
+  const [currentView, setCurrentView] = useState('landing');
   const [pendingResetPassword, setPendingResetPassword] = useState(false);
 
   useEffect(() => {
@@ -23,65 +20,43 @@ function AppContent() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setPendingResetPassword(true);
-        navigate('/member');
+        setCurrentView('member');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
 
-  // Determine current view for Layout based on path
-  const getCurrentView = () => {
-    const path = location.pathname;
-    if (path === '/') return 'landing';
-    // Handle nested paths like /games/matching -> 'games'
-    const segment = path.substring(1).split('/')[0];
-    return segment; 
+  const renderView = () => {
+    switch (currentView) {
+      case 'landing':
+        return <LandingPage setView={setCurrentView} />;
+      case 'parenting':
+        return <ParentingSection />;
+      case 'games':
+        return <GameSection />;
+      case 'toolkit':
+        return <ToolkitSection setView={setCurrentView} />;
+      case 'tech':
+        return <TechSection />;
+      case 'english':
+        return <EnglishSection />;
+      case 'member':
+        return <MemberSection defaultShowResetPassword={pendingResetPassword} setView={setCurrentView} />;
+      case 'admin':
+        return <AdminDashboard onBack={() => setCurrentView('member')} />;
+      default:
+        return <LandingPage setView={setCurrentView} />;
+    }
   };
 
   return (
-    <Routes>
-      <Route path="/admin" element={<AdminDashboard onBack={() => navigate('/member')} />} />
-      
-      {/* Main Layout Route - Wrapper ensures Layout doesn't unmount on page change */}
-      <Route element={
-        <Layout currentView={getCurrentView()}>
-          <Outlet />
+    <AuthProvider>
+      <GameTimeProvider>
+        <Layout currentView={currentView} setView={setCurrentView}>
+          {renderView()}
         </Layout>
-      }>
-        <Route path="/" element={<LandingPage />} />
-        
-        {/* Nested routes for deep linking */}
-        <Route path="/parenting" element={<ParentingSection />} />
-        <Route path="/parenting/:articleId" element={<ParentingSection />} />
-        
-        <Route path="/games" element={<GameSection />} />
-        <Route path="/games/:gameId" element={<GameSection />} />
-        
-        <Route path="/toolkit" element={<ToolkitSection />} />
-        <Route path="/tech" element={<TechSection />} />
-        <Route path="/english" element={<EnglishSection />} />
-        
-        <Route 
-          path="/member" 
-          element={<MemberSection defaultShowResetPassword={pendingResetPassword} />} 
-        />
-        
-        {/* Catch all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
-  );
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <AuthProvider>
-        <GameTimeProvider>
-          <AppContent />
-        </GameTimeProvider>
-      </AuthProvider>
-    </BrowserRouter>
+      </GameTimeProvider>
+    </AuthProvider>
   );
 }
