@@ -837,11 +837,15 @@ function EmojiCalendar() {
                                     <span className={`text-xs font-bold ${isToday ? 'text-purple-600' : 'text-stone-600'}`}>
                                         {date.getDate()}
                                     </span>
-                                    {event && (
-                                        <div className="mt-1 text-2xl md:text-3xl animate-in zoom-in duration-200">
-                                            {event.emoji}
-                                        </div>
-                                    )}
+                                    {/* Event Display or Placeholder to maintain height */}
+                                    <div className="mt-1 text-2xl md:text-3xl leading-none">
+                                        {event ? (
+                                            <div className="animate-in zoom-in duration-200">{event.emoji}</div>
+                                        ) : (
+                                            <div className="opacity-0 select-none">📅</div>
+                                        )}
+                                    </div>
+
                                     {!event && (
                                         <Plus className="w-4 h-4 text-stone-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 hover:opacity-100" />
                                     )}
