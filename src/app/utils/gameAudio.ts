@@ -170,3 +170,22 @@ export const stopBackgroundMusic = () => {
     bgmInterval = null;
   }
 };
+
+/**
+ * 使用瀏覽器語音合成朗讀文字 (Text-to-Speech)
+ * @param text 要朗讀的文字
+ * @param lang 語言代碼 (預設 en-US)
+ */
+export const speakText = (text: string, lang: string = 'en-US') => {
+  if (!('speechSynthesis' in window)) return;
+
+  // Cancel any currently playing speech to avoid overlap
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  utterance.rate = 0.8; // Slightly slower for kids
+  utterance.pitch = 1.1; // Slightly higher pitch for friendliness
+
+  window.speechSynthesis.speak(utterance);
+};

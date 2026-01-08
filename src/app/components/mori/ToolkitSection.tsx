@@ -8,6 +8,9 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { toast } from 'sonner';
 import { projectId, publicAnonKey } from '../../../../utils/supabase/info';
+
+const SERVER_URL = `https://${projectId}.supabase.co/functions/v1/make-server-92f3175c`;
+
 import {
   Dialog,
   DialogContent,
@@ -18,6 +21,24 @@ import {
 } from "../ui/dialog";
 
 import { useNavigate } from 'react-router-dom';
+
+function useDebouncedCallback<T extends (...args: any[]) => void>(callback: T, delay: number) {
+    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    
+    // Clean up timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, []);
+
+    return React.useCallback((...args: Parameters<T>) => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+            callback(...args);
+        }, delay);
+    }, [callback, delay]);
+}
 
 export function ToolkitSection() {
   const navigate = useNavigate();
@@ -328,12 +349,20 @@ function AllowanceTracker() {
 
     const handleAdd = (type: 'income' | 'expense') => {
         if (!amount) return;
+        
+        // Use local date YYYY-MM-DD
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
         const newItem = {
             id: Date.now().toString(),
             icon: selectedEmoji,
             amount: parseInt(amount),
             type,
-            date: new Date().toLocaleDateString()
+            date: dateStr
         };
         const newRecords = [...items, newItem];
         setItems(newRecords);
@@ -434,7 +463,10 @@ function AllowanceTracker() {
                         <div key={item.id} className="flex items-center justify-between bg-white border border-stone-100 p-4 rounded-2xl shadow-sm">
                             <div className="flex items-center gap-4">
                                 <div className="text-3xl">{item.icon}</div>
-                                <div className="text-xs text-stone-400">{item.date}</div>
+                                <div className="text-xs text-stone-400">
+                                    {/* Display YYYY-MM-DD cleanly, replacing - with / for friendly look */}
+                                    {item.date.replace(/-/g, '/')}
+                                </div>
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className={`text-xl font-bold font-mono ${item.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>
@@ -537,6 +569,8 @@ function ClassSchedule() {
         }
     };
 
+    const debouncedSync = useDebouncedCallback(syncSchedule, 1000);
+
     const handleCellClick = (day: string, periodId: string | number) => {
         setSelectedCell({ day, periodId });
     };
@@ -547,7 +581,7 @@ function ClassSchedule() {
         const newSchedule = { ...schedule, [key]: emoji };
         setSchedule(newSchedule);
         setSelectedCell(null);
-        syncSchedule(newSchedule, periods);
+        syncSchedule(newSchedule, periods); // Immediate sync for subject change
     };
 
     const handleClearCell = () => {
@@ -557,13 +591,13 @@ function ClassSchedule() {
         delete newSchedule[key];
         setSchedule(newSchedule);
         setSelectedCell(null);
-        syncSchedule(newSchedule, periods);
+        syncSchedule(newSchedule, periods); // Immediate sync for clear
     };
 
     const handleTimeChange = (id: string | number, newTime: string) => {
         const newPeriods = periods.map(p => p.id === id ? { ...p, time: newTime } : p);
         setPeriods(newPeriods);
-        syncSchedule(schedule, newPeriods);
+        debouncedSync(schedule, newPeriods); // Debounced sync for text input
     };
 
     return (
@@ -834,11 +868,13 @@ function EmojiCalendar() {
                                     <span className={`text-xs font-bold ${isToday ? 'text-purple-600' : 'text-stone-600'}`}>
                                         {date.getDate()}
                                     </span>
-                                    {event && (
-                                        <div className="mt-1 text-2xl md:text-3xl animate-in zoom-in duration-200">
-                                            {event.emoji}
-                                        </div>
-                                    )}
+                                    <div className="mt-1 h-8 md:h-9 flex items-center justify-center w-full">
+                                        {event && (
+                                            <div className="text-2xl md:text-3xl animate-in zoom-in duration-200">
+                                                {event.emoji}
+                                            </div>
+                                        )}
+                                    </div>
                                     {!event && (
                                         <Plus className="w-4 h-4 text-stone-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 hover:opacity-100" />
                                     )}

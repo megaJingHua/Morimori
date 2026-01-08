@@ -7,6 +7,7 @@ import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { useGameTime } from '../../context/GameTimeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useParams, useNavigate } from 'react-router-dom';
 import { MathGarden } from './MathGarden';
 import { ShadowGame } from './ShadowGame';
 import { ColorGame } from './ColorGame';
@@ -117,22 +118,23 @@ function FloatingTimer() {
 }
 
 export function GameSection() {
-  const [activeGame, setActiveGame] = useState<string | null>(null);
+  const { gameId } = useParams();
+  const navigate = useNavigate();
 
-  if (activeGame === 'matching') {
-    return <MatchingGame onExit={() => setActiveGame(null)} />;
+  if (gameId === 'matching') {
+    return <MatchingGame onExit={() => navigate('/games')} />;
   }
 
-  if (activeGame === 'math') {
-    return <MathGarden onExit={() => setActiveGame(null)} />;
+  if (gameId === 'math') {
+    return <MathGarden onExit={() => navigate('/games')} />;
   }
 
-  if (activeGame === 'shadow') {
-    return <ShadowGame onExit={() => setActiveGame(null)} />;
+  if (gameId === 'shadow') {
+    return <ShadowGame onExit={() => navigate('/games')} />;
   }
 
-  if (activeGame === 'color') {
-    return <ColorGame onExit={() => setActiveGame(null)} />;
+  if (gameId === 'color') {
+    return <ColorGame onExit={() => navigate('/games')} />;
   }
 
   const { user } = useAuth();
@@ -224,7 +226,7 @@ export function GameSection() {
                     <Button 
                         className={`w-full rounded-xl ${game.id === 'sorting' ? 'bg-stone-200 text-stone-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                         disabled={game.id === 'sorting'}
-                        onClick={() => setActiveGame(game.id)}
+                        onClick={() => navigate(`/games/${game.id}`)}
                     >
                         {game.id === 'sorting' ? '敬請期待' : '開始遊玩'}
                     </Button>

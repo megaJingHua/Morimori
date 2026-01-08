@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { Home, User, BookOpen, Gamepad2, Code, Menu, X, Briefcase, LogOut, Sparkles, Plane } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuth } from '../../context/AuthContext';
@@ -164,17 +163,7 @@ export function Layout({ children, currentView }: LayoutProps) {
 
       {/* Main Content */}
       <main className="pt-20 px-4 md:px-8 pb-16 max-w-7xl mx-auto min-h-[calc(100vh-4rem)]">
-         <AnimatePresence mode="wait">
-            <motion.div
-                key={currentView}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-            >
-                {children}
-            </motion.div>
-         </AnimatePresence>
+         {children}
       </main>
 
       {/* Footer */}
