@@ -24,6 +24,8 @@ const heroBackground = "/Morimori/assets/landing-hero.png";
 const parentingImage = "/Morimori/assets/landing-parenting.png";
 const parentingGamesImage = "/Morimori/assets/landing-games.png";
 const technicalImage = "/Morimori/assets/landing-tech.png";
+const aviationImage = "/Morimori/assets/airlines_abc.png";
+const toolkitImage = "/Morimori/assets/mori_backage.png";
 
 interface LandingPageProps {
   setView: (view: string) => void;
@@ -273,7 +275,7 @@ export function LandingPage({ setView }: LandingPageProps) {
           >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1751107756601-66fa542b0e3c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcmdhbml6ZWQlMjB0b29scyUyMHdvcmtzcGFjZSUyMGRlc2t8ZW58MXx8fHwxNzY3NzYwMDkwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                src={toolkitImage}
                 alt="Toolkit workspace"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -307,7 +309,7 @@ export function LandingPage({ setView }: LandingPageProps) {
           >
             <div className="h-48 overflow-hidden relative">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1622818622723-b6a6dd81e918?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhaXJwbGFuZSUyMGZseWluZyUyMGluJTIwYmx1ZSUyMHNreSUyMHRyYXZlbHxlbnwxfHx8fDE3Njc3NjAwOTF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+                src={aviationImage}
                 alt="Aviation"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />

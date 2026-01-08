@@ -275,8 +275,8 @@ function EnglishArticleView({ article, onBack }: { article: EnglishArticle; onBa
 
             {/* Featured Image */}
             <div className="rounded-[2rem] overflow-hidden shadow-sm border border-stone-100 bg-stone-50">
-                <div className="aspect-video md:aspect-[21/9] relative">
-                     <ImageWithFallback src={article.image} alt={article.title} className="w-full h-full object-cover" />
+                <div className="relative">
+                     <ImageWithFallback src={article.image} alt={article.title} className="w-full h-auto" />
                 </div>
                 {(article.imageCredit || article.imageSourceUrl) && (
                     <div className="px-6 py-3 text-xs text-stone-500 flex flex-wrap items-center justify-between gap-2 border-t border-stone-100">
