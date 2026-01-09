@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { User, Settings, Clock, Award, Star, Shield, Lock, Mail, Loader2, LogOut, Bookmark, Heart, Calendar, Eye, EyeOff, ArrowLeft, Gamepad2, Save, Edit2, Check, X, Unlock } from 'lucide-react';
