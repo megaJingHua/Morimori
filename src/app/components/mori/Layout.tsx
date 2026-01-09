@@ -26,7 +26,7 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: '首頁', icon: Home },
+    { path: '/Morimori', label: '首頁', icon: Home },
     { path: '/parenting', label: '親子文章', icon: BookOpen },
     { path: '/games', label: '遊戲區', icon: Gamepad2 },
     { path: '/toolkit', label: '工具包', icon: Briefcase },
@@ -35,8 +35,8 @@ export function Layout({ children }: LayoutProps) {
   ];
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/';
+    if (path === '/Morimori') {
+      return location.pathname === '/Morimori' || location.pathname === '/';
     }
     return location.pathname.startsWith(path);
   };
@@ -51,7 +51,7 @@ export function Layout({ children }: LayoutProps) {
           
           {/* Logo */}
           <Link 
-            to="/"
+            to="/Morimori"
             className="flex items-center gap-2 cursor-pointer" 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >

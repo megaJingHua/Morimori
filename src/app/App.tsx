@@ -21,7 +21,8 @@ export default function App() {
         <GameTimeProvider>
           <Layout>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<Navigate to="/Morimori" replace />} />
+              <Route path="/Morimori" element={<LandingPage />} />
               <Route path="/parenting/*" element={<ParentingSection />} />
               <Route path="/games/*" element={<GameSection />} />
               <Route path="/toolkit/*" element={<ToolkitSection />} />
@@ -29,7 +30,7 @@ export default function App() {
               <Route path="/english/*" element={<EnglishSection />} />
               <Route path="/member" element={<MemberSection />} />
               <Route path="/admin" element={<AdminDashboard onBack={() => window.location.href = '/member'} />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/Morimori" replace />} />
             </Routes>
           </Layout>
         </GameTimeProvider>
