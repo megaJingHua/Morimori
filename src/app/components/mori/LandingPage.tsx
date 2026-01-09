@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import { Link } from "react-router-dom";
 import {
   projectId,
   publicAnonKey,
@@ -19,6 +20,7 @@ import {
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
+
 // Standard Web Asset Imports
 const heroBackground = "/Morimori/assets/landing-hero.png";
 const parentingImage = "/Morimori/assets/landing-parenting.png";
@@ -27,11 +29,7 @@ const technicalImage = "/Morimori/assets/landing-tech.png";
 const aviationImage = "/Morimori/assets/airlines_abc.png";
 const toolkitImage = "/Morimori/assets/mori_backage.png";
 
-interface LandingPageProps {
-  setView: (view: string) => void;
-}
-
-export function LandingPage({ setView }: LandingPageProps) {
+export function LandingPage() {
   const [visitCount, setVisitCount] = useState<number | null>(
     null,
   );
@@ -83,8 +81,6 @@ export function LandingPage({ setView }: LandingPageProps) {
             alt="Forest Background"
             className="w-full h-full object-cover"
           />
-          {/* Mobile Overlay for better readability */}
-          {/* <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/60 to-white/10 md:bg-white/40 md:bg-none md:backdrop-blur-[2px]" /> */}
         </div>
 
         <div className="relative z-10 max-w-2xl mx-auto space-y-4 md:space-y-6 flex flex-col justify-end md:justify-center h-full md:h-auto pb-10 md:pb-0">
@@ -165,173 +161,163 @@ export function LandingPage({ setView }: LandingPageProps) {
       >
         {/* Parenting Articles */}
         <motion.div variants={item} className="h-full">
-          <Card
-            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-orange-50/50 cursor-pointer"
-            onClick={() => setView("parenting")}
-          >
-            <div className="h-48 overflow-hidden relative">
-              <ImageWithFallback
-                src={parentingImage}
-                alt="Reading together"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
-                <BookOpen className="w-6 h-6 text-orange-500" />
+          <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-orange-50/50">
+            <Link to="/parenting" className="block h-full cursor-pointer">
+              <div className="h-48 overflow-hidden relative">
+                <ImageWithFallback
+                  src={parentingImage}
+                  alt="Reading together"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
+                  <BookOpen className="w-6 h-6 text-orange-500" />
+                </div>
               </div>
-            </div>
-            <CardContent className="p-6 space-y-4">
-              <h3 className="text-2xl font-bold text-stone-800">
-                親子文章
-              </h3>
-              <p className="text-stone-600 leading-relaxed">
-                被理解、被安慰的溫柔文字。這裡不談大道理，只談我們共同經歷的育兒酸甜。
-              </p>
-              <Button
-                variant="ghost"
-                className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 p-0 h-auto font-medium"
-                onClick={() => setView("parenting")}
-              >
-                開始閱讀 <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </CardContent>
+              <CardContent className="p-6 space-y-4">
+                <h3 className="text-2xl font-bold text-stone-800">
+                  親子文章
+                </h3>
+                <p className="text-stone-600 leading-relaxed">
+                  被理解、被安慰的溫柔文字。這裡不談大道理，只談我們共同經歷的育兒酸甜。
+                </p>
+                <Button
+                  variant="ghost"
+                  className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 p-0 h-auto font-medium"
+                >
+                  開始閱讀 <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </CardContent>
+            </Link>
           </Card>
         </motion.div>
 
         {/* Parenting Games */}
         <motion.div variants={item} className="h-full">
-          <Card
-            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-emerald-50/50 cursor-pointer"
-            onClick={() => setView("games")}
-          >
-            <div className="h-48 overflow-hidden relative">
-              <ImageWithFallback
-                src={parentingGamesImage}
-                alt="Playing games"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
-                <Gamepad2 className="w-6 h-6 text-emerald-500" />
+          <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-emerald-50/50">
+            <Link to="/games" className="block h-full cursor-pointer">
+              <div className="h-48 overflow-hidden relative">
+                <ImageWithFallback
+                  src={parentingGamesImage}
+                  alt="Playing games"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
+                  <Gamepad2 className="w-6 h-6 text-emerald-500" />
+                </div>
               </div>
-            </div>
-            <CardContent className="p-6 space-y-4">
-              <h3 className="text-2xl font-bold text-stone-800">
-                親子遊戲區
-              </h3>
-              <p className="text-stone-600 leading-relaxed">
-                把邏輯變成好玩的遊戲。適合 3-6 歲孩子，每天 10
-                分鐘，高品質的陪伴時光。
-              </p>
-              <Button
-                variant="ghost"
-                className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 p-0 h-auto font-medium"
-                onClick={() => setView("games")}
-              >
-                去玩遊戲 <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </CardContent>
+              <CardContent className="p-6 space-y-4">
+                <h3 className="text-2xl font-bold text-stone-800">
+                  親子遊戲區
+                </h3>
+                <p className="text-stone-600 leading-relaxed">
+                  把邏輯變成好玩的遊戲。適合 3-6 歲孩子，每天 10
+                  分鐘，高品質的陪伴時光。
+                </p>
+                <Button
+                  variant="ghost"
+                  className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 p-0 h-auto font-medium"
+                >
+                  去玩遊戲 <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </CardContent>
+            </Link>
           </Card>
         </motion.div>
 
         {/* Technical Blog */}
         <motion.div variants={item} className="h-full">
-          <Card
-            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-slate-50/50 cursor-pointer"
-            onClick={() => setView("tech")}
-          >
-            <div className="h-48 overflow-hidden relative">
-              <ImageWithFallback
-                src={technicalImage}
-                alt="Tech workspace"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
-                <Code className="w-6 h-6 text-slate-500" />
+          <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-slate-50/50">
+            <Link to="/tech" className="block h-full cursor-pointer">
+              <div className="h-48 overflow-hidden relative">
+                <ImageWithFallback
+                  src={technicalImage}
+                  alt="Tech workspace"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
+                  <Code className="w-6 h-6 text-slate-500" />
+                </div>
               </div>
-            </div>
-            <CardContent className="p-6 space-y-4">
-              <h3 className="text-2xl font-bold text-stone-800">
-                技術心得
-              </h3>
-              <p className="text-stone-600 leading-relaxed">
-                工程師媽媽的實務筆記。用最清楚的邏輯，分享技術路上的風景。
-              </p>
-              <Button
-                variant="ghost"
-                className="text-slate-600 hover:text-slate-700 hover:bg-slate-100 p-0 h-auto font-medium"
-                onClick={() => setView("tech")}
-              >
-                查看技術文{" "}
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </CardContent>
+              <CardContent className="p-6 space-y-4">
+                <h3 className="text-2xl font-bold text-stone-800">
+                  技術心得
+                </h3>
+                <p className="text-stone-600 leading-relaxed">
+                  工程師媽媽的實務筆記。用最清楚的邏輯，分享技術路上的風景。
+                </p>
+                <Button
+                  variant="ghost"
+                  className="text-slate-600 hover:text-slate-700 hover:bg-slate-100 p-0 h-auto font-medium"
+                >
+                  查看技術文{" "}
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </CardContent>
+            </Link>
           </Card>
         </motion.div>
 
         {/* Toolkit */}
         <motion.div variants={item} className="h-full">
-          <Card
-            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-indigo-50/50 cursor-pointer"
-            onClick={() => setView("toolkit")}
-          >
-            <div className="h-48 overflow-hidden relative">
-              <ImageWithFallback
-                src={toolkitImage}
-                alt="Toolkit workspace"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
-                <Briefcase className="w-6 h-6 text-indigo-500" />
+          <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-indigo-50/50">
+            <Link to="/toolkit" className="block h-full cursor-pointer">
+              <div className="h-48 overflow-hidden relative">
+                <ImageWithFallback
+                  src={toolkitImage}
+                  alt="Toolkit workspace"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
+                  <Briefcase className="w-6 h-6 text-indigo-500" />
+                </div>
               </div>
-            </div>
-            <CardContent className="p-6 space-y-4">
-              <h3 className="text-2xl font-bold text-stone-800">
-                工具包
-              </h3>
-              <p className="text-stone-600 leading-relaxed">
-                實用的育兒與工作小工具。讓繁瑣的日常變得井然有序。
-              </p>
-              <Button
-                variant="ghost"
-                className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 p-0 h-auto font-medium"
-                onClick={() => setView("toolkit")}
-              >
-                使用工具 <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </CardContent>
+              <CardContent className="p-6 space-y-4">
+                <h3 className="text-2xl font-bold text-stone-800">
+                  工具包
+                </h3>
+                <p className="text-stone-600 leading-relaxed">
+                  實用的育兒與工作小工具。讓繁瑣的日常變得井然有序。
+                </p>
+                <Button
+                  variant="ghost"
+                  className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 p-0 h-auto font-medium"
+                >
+                  使用工具 <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </CardContent>
+            </Link>
           </Card>
         </motion.div>
 
         {/* Aviation English */}
         <motion.div variants={item} className="h-full">
-          <Card
-            className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-sky-50/50 cursor-pointer"
-            onClick={() => setView("english")}
-          >
-            <div className="h-48 overflow-hidden relative">
-              <ImageWithFallback
-                src={aviationImage}
-                alt="Aviation"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
-                <Plane className="w-6 h-6 text-sky-500" />
+          <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group bg-sky-50/50">
+            <Link to="/english" className="block h-full cursor-pointer">
+              <div className="h-48 overflow-hidden relative">
+                <ImageWithFallback
+                  src={aviationImage}
+                  alt="Aviation"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-xl shadow-sm">
+                  <Plane className="w-6 h-6 text-sky-500" />
+                </div>
               </div>
-            </div>
-            <CardContent className="p-6 space-y-4">
-              <h3 className="text-2xl font-bold text-stone-800">
-                航空英文
-              </h3>
-              <p className="text-stone-600 leading-relaxed">
-                跟著飛機去旅行！用輕鬆的方式學習航空相關的實用英文。
-              </p>
-              <Button
-                variant="ghost"
-                className="text-sky-600 hover:text-sky-700 hover:bg-sky-100 p-0 h-auto font-medium"
-                onClick={() => setView("english")}
-              >
-                開始學習 <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </CardContent>
+              <CardContent className="p-6 space-y-4">
+                <h3 className="text-2xl font-bold text-stone-800">
+                  航空英文
+                </h3>
+                <p className="text-stone-600 leading-relaxed">
+                  跟著飛機去旅行！用輕鬆的方式學習航空相關的實用英文。
+                </p>
+                <Button
+                  variant="ghost"
+                  className="text-sky-600 hover:text-sky-700 hover:bg-sky-100 p-0 h-auto font-medium"
+                >
+                  開始學習 <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </CardContent>
+            </Link>
           </Card>
         </motion.div>
       </motion.section>

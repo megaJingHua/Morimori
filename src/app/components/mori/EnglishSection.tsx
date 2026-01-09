@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Routes, Route, Link, useParams, useNavigate } from 'react-router-dom';
 import { Plane, ArrowLeft, Copy, Check, Lightbulb, GraduationCap, ChevronDown, BookOpen, Quote, Sparkles, HelpCircle, CheckCircle2, XCircle, ArrowRight, RotateCcw } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -11,70 +12,86 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { toast } from 'sonner';
 
 export function EnglishSection() {
-  const [selectedArticle, setSelectedArticle] = useState<EnglishArticle | null>(null);
-
-  const handleArticleClick = (article: EnglishArticle) => {
-    setSelectedArticle(article);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
     <div className="max-w-5xl mx-auto py-8 md:py-12 px-4 sm:px-6">
-      <AnimatePresence mode="wait">
-        {!selectedArticle ? (
-          <motion.div
-            key="list"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-8"
-          >
-            <div className="flex items-center gap-3 mb-8">
-               <div className="p-3 bg-sky-600 rounded-2xl shadow-lg shadow-sky-200">
-                  <Plane className="w-8 h-8 text-white" />
-               </div>
-               <div>
-                  <h2 className="text-3xl font-bold text-stone-800 tracking-tight">航空英文</h2>
-                  <p className="text-stone-500 text-sm">Aviation English with Mega</p>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6">
-                {ENGLISH_ARTICLES.map((article) => (
-                    <Card 
-                        key={article.id}
-                        className="group cursor-pointer border-stone-100 hover:border-sky-200 hover:shadow-xl transition-all duration-300 overflow-hidden rounded-3xl"
-                        onClick={() => handleArticleClick(article)}
-                    >
-                        <div className="flex flex-col md:flex-row">
-                            <div className="md:w-1/3 h-56 md:h-auto relative overflow-hidden">
-                                <ImageWithFallback src={article.image} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent md:bg-gradient-to-r" />
-                            </div>
-                            <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
-                                <div className="flex items-center gap-2 mb-3 text-xs font-bold tracking-wider text-sky-600 uppercase">
-                                    <Badge variant="secondary" className="bg-sky-50 text-sky-700 hover:bg-sky-100 border-sky-100">Latest Article</Badge>
-                                    <span>•</span>
-                                    <span>{article.source}</span>
-                                </div>
-                                <h3 className="text-2xl font-bold text-stone-800 mb-3 group-hover:text-sky-700 transition-colors leading-tight">
-                                    {article.title}
-                                </h3>
-                                <div className="flex items-center text-stone-400 text-sm mt-auto">
-                                    <span>{article.date}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-          </motion.div>
-        ) : (
-          <EnglishArticleView key="article-view" article={selectedArticle} onBack={() => setSelectedArticle(null)} />
-        )}
-      </AnimatePresence>
+      <Routes>
+        <Route index element={<EnglishList />} />
+        <Route path=":articleId" element={<EnglishArticleWrapper />} />
+      </Routes>
     </div>
   );
+}
+
+function EnglishList() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-8"
+    >
+      <div className="flex items-center gap-3 mb-8">
+          <div className="p-3 bg-sky-600 rounded-2xl shadow-lg shadow-sky-200">
+            <Plane className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-stone-800 tracking-tight">航空英文</h2>
+            <p className="text-stone-500 text-sm">Aviation English with Mega</p>
+          </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+          {ENGLISH_ARTICLES.map((article) => (
+              <Link to={article.id} key={article.id} className="block group">
+                <Card 
+                    className="border-stone-100 hover:border-sky-200 hover:shadow-xl transition-all duration-300 overflow-hidden rounded-3xl"
+                >
+                    <div className="flex flex-col md:flex-row">
+                        <div className="md:w-1/3 h-56 md:h-auto relative overflow-hidden">
+                            <ImageWithFallback src={article.image} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent md:bg-gradient-to-r" />
+                        </div>
+                        <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
+                            <div className="flex items-center gap-2 mb-3 text-xs font-bold tracking-wider text-sky-600 uppercase">
+                                <Badge variant="secondary" className="bg-sky-50 text-sky-700 hover:bg-sky-100 border-sky-100">Latest Article</Badge>
+                                <span>•</span>
+                                <span>{article.source}</span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-stone-800 mb-3 group-hover:text-sky-700 transition-colors leading-tight">
+                                {article.title}
+                            </h3>
+                            <div className="flex items-center text-stone-400 text-sm mt-auto">
+                                <span>{article.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+              </Link>
+          ))}
+      </div>
+    </motion.div>
+  );
+}
+
+function EnglishArticleWrapper() {
+  const { articleId } = useParams();
+  const navigate = useNavigate();
+  const article = ENGLISH_ARTICLES.find(a => a.id === articleId);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  if (!article) {
+    return (
+      <div className="text-center py-20">
+        <h3 className="text-xl font-bold text-stone-800">Article not found</h3>
+        <Button onClick={() => navigate('/english')} className="mt-4">Back to List</Button>
+      </div>
+    );
+  }
+
+  return <EnglishArticleView article={article} onBack={() => navigate('/english')} />;
 }
 
 function EnglishArticleView({ article, onBack }: { article: EnglishArticle; onBack: () => void }) {

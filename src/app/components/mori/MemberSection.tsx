@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { User, Settings, Clock, Award, Star, Shield, Lock, Mail, Loader2, LogOut, Bookmark, Heart, Calendar, Eye, EyeOff, ArrowLeft, Gamepad2, Save, Edit2, Check, X, Unlock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
@@ -23,15 +23,11 @@ import * as moriDb from '../../services/moriDb';
 import { getZodiac } from '../../utils/zodiac';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
-interface MemberSectionProps {
-  defaultShowResetPassword?: boolean;
-  setView?: (view: string) => void;
-}
-
-export function MemberSection({ defaultShowResetPassword = false, setView }: MemberSectionProps) {
+export function MemberSection() {
   const { user, loading, signOut, session, supabase } = useAuth();
   const { dailyLimit, setDailyLimit, timeUsed, saveSettings } = useGameTime();
   const [authTab, setAuthTab] = useState('login');
+  const [searchParams] = useSearchParams();
   
   // Login State
   const [loginEmail, setLoginEmail] = useState('');
@@ -76,7 +72,7 @@ export function MemberSection({ defaultShowResetPassword = false, setView }: Mem
   const [isSendingReset, setIsSendingReset] = useState(false);
 
   // Reset Password State (Logged In)
-  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(defaultShowResetPassword);
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isResettingPassword, setIsResettingPassword] = useState(false);
@@ -85,10 +81,10 @@ export function MemberSection({ defaultShowResetPassword = false, setView }: Mem
   const allArticles = [...ARTICLES, ...ALL_TECH_ARTICLES];
 
   useEffect(() => {
-    if (defaultShowResetPassword) {
+    if (searchParams.get('reset') === 'true') {
         setShowResetPasswordDialog(true);
     }
-  }, [defaultShowResetPassword]);
+  }, [searchParams]);
 
   useEffect(() => {
     if (user) {
@@ -687,14 +683,15 @@ export function MemberSection({ defaultShowResetPassword = false, setView }: Mem
                 <p className="text-stone-500 mt-2 text-lg">歡迎回來，今天想為孩子紀錄什麼呢？</p>
             </div>
             <div className="flex items-center gap-2">
-                {user.email === 'h12732u@gmail.com' && setView && (
-                    <Button 
-                        variant="outline" 
-                        onClick={() => setView('admin')}
-                        className="rounded-full px-6 text-stone-500 hover:text-emerald-600 hover:bg-emerald-50 border-stone-200"
-                    >
-                        <Shield className="w-4 h-4 mr-2" /> 後台管理
-                    </Button>
+                {user.email === 'h12732u@gmail.com' && (
+                    <Link to="/admin">
+                        <Button 
+                            variant="outline" 
+                            className="rounded-full px-6 text-stone-500 hover:text-emerald-600 hover:bg-emerald-50 border-stone-200"
+                        >
+                            <Shield className="w-4 h-4 mr-2" /> 後台管理
+                        </Button>
+                    </Link>
                 )}
                 <Button variant="outline" onClick={handleSignOut} className="rounded-full px-6 text-stone-500 hover:text-red-600 hover:bg-red-50 border-stone-200">
                     <LogOut className="w-4 h-4 mr-2" /> 登出

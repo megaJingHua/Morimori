@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, User, Check, RefreshCw, Star, Trophy, Moon, Home, Hourglass, Sparkles, Lightbulb } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
@@ -11,10 +12,6 @@ import { MathGarden } from './MathGarden';
 import { ShadowGame } from './ShadowGame';
 import { TimeUpOverlay } from './TimeUpOverlay';
 import { playCorrectSound, playWrongSound } from '../../utils/gameAudio';
-
-// Use static asset path instead of Figma import
-const forestBg = '/Morimori/assets/forest-bg.png';
-
 import {
   Dialog,
   DialogContent,
@@ -23,6 +20,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+
+// Use static asset path instead of Figma import
+const forestBg = '/Morimori/assets/forest-bg.png';
 
 // Game Types
 interface Game {
@@ -65,6 +65,39 @@ const GAMES: Game[] = [
   }
 ];
 
+export function GameSection() {
+  return (
+    <Routes>
+      <Route index element={<GameLobby />} />
+      <Route path=":gameId" element={<GameWrapper />} />
+    </Routes>
+  );
+}
+
+function GameWrapper() {
+  const { gameId } = useParams();
+  const navigate = useNavigate();
+
+  const handleExit = () => {
+    navigate('/games');
+  };
+
+  if (gameId === 'matching') {
+    return <MatchingGame onExit={handleExit} />;
+  }
+
+  if (gameId === 'math') {
+    return <MathGarden onExit={handleExit} />;
+  }
+
+  if (gameId === 'shadow') {
+    return <ShadowGame onExit={handleExit} />;
+  }
+
+  // If game not found, redirect to lobby
+  return <GameLobby />;
+}
+
 function FloatingTimer() {
   const { user } = useAuth();
   const { dailyLimit, timeUsed, isPlaying } = useGameTime();
@@ -106,21 +139,7 @@ function FloatingTimer() {
   );
 }
 
-export function GameSection() {
-  const [activeGame, setActiveGame] = useState<string | null>(null);
-
-  if (activeGame === 'matching') {
-    return <MatchingGame onExit={() => setActiveGame(null)} />;
-  }
-
-  if (activeGame === 'math') {
-    return <MathGarden onExit={() => setActiveGame(null)} />;
-  }
-
-  if (activeGame === 'shadow') {
-    return <ShadowGame onExit={() => setActiveGame(null)} />;
-  }
-
+function GameLobby() {
   const { user } = useAuth();
 
   return (
@@ -198,13 +217,14 @@ export function GameSection() {
                     {game.description}
                 </p>
                 <div className="pt-4">
-                    <Button 
-                        className={`w-full rounded-xl ${game.id === 'sorting' ? 'bg-stone-200 text-stone-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}
-                        disabled={game.id === 'sorting'}
-                        onClick={() => setActiveGame(game.id)}
-                    >
-                        {game.id === 'sorting' ? '敬請期待' : '開始遊玩'}
-                    </Button>
+                    <Link to={game.id === 'sorting' ? '#' : game.id} className="w-full block">
+                        <Button 
+                            className={`w-full rounded-xl ${game.id === 'sorting' ? 'bg-stone-200 text-stone-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                            disabled={game.id === 'sorting'}
+                        >
+                            {game.id === 'sorting' ? '敬請期待' : '開始遊玩'}
+                        </Button>
+                    </Link>
                 </div>
               </CardContent>
             </Card>
@@ -374,8 +394,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
 
   return (
     <div 
-        className="fixed inset-0 z-50 bg-stone-50 flex flex-col select-none overflow-hidden touch-none bg-[length:auto_100%] md:bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${forestBg})` }}
+        className="fixed inset-0 z-50 bg-stone-50 flex flex-col select-none overflow-hidden touch-none bg-emerald-100"
     >
       {/* Header */}
       <div className="flex-none px-4 py-3 bg-white/90 backdrop-blur-md shadow-sm flex justify-between items-center z-20">

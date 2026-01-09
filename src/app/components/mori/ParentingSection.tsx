@@ -1,39 +1,198 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Clock, Calendar, Heart, Share2, MessageCircle, Check, Star, Wind, Shield, HeartHandshake, Sparkles, Eye, Facebook, Link, Instagram, Loader2, Bookmark } from 'lucide-react';
+import { Routes, Route, Link, useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Clock, Calendar, Heart, Share2, MessageCircle, Check, Star, Wind, Shield, HeartHandshake, Sparkles, Eye, Facebook, Link as LinkIcon, Instagram, Loader2, Bookmark } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { projectId, publicAnonKey } from "../../../../utils/supabase/info";
-const authorAvatar = "/Morimori/assets/author-avatar.png";
-const articleImage = "/Morimori/assets/article-image-default.png";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
 import { toast } from "sonner";
 import { useAuth } from '../../context/AuthContext';
 import { ARTICLES } from '../../data/articles';
 import { ArticleDetail } from './ArticleDetail';
 
+const authorAvatar = "/Morimori/assets/author-avatar.png";
+
 export function ParentingSection() {
+  return (
+    <Routes>
+      <Route index element={<ParentingList />} />
+      <Route path=":articleId" element={<ParentingArticleWrapper />} />
+    </Routes>
+  );
+}
+
+function ParentingArticleWrapper() {
+  const { articleId } = useParams();
+  const navigate = useNavigate();
   const { user, session } = useAuth();
-  const [selectedArticleId, setSelectedArticleId] = useState<number | null>(null);
+  
+  const articleIdNum = parseInt(articleId || '0', 10);
+  const selectedArticle = ARTICLES.find(a => a.id === articleIdNum);
+
+  const [readCount, setReadCount] = useState(0);
+  const [likeCount, setLikeCount] = useState(0);
+  const [collectionCount, setCollectionCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isCollected, setIsCollected] = useState(false);
+
+  useEffect(() => {
+    if (selectedArticle) {
+       window.scrollTo({ top: 0, behavior: 'smooth' });
+       // Fetch specific article data
+       const fetchArticleData = async () => {
+           try {
+               // Record view
+               const viewRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${articleIdNum}/view`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+               });
+               if (viewRes.ok) {
+                   const data = await viewRes.json();
+                   setReadCount(data.count);
+               }
+
+               // Get Like Count
+               const likeRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${articleIdNum}/likes`, { // This endpoint might return all likes, need to check API or simpler: assume we got all counts in list and passed them? No, direct link access needs fetch.
+                   // Actually the previous implementation fetched ALL counts.
+                   // Let's just fetch all counts for simplicity as per previous code, or if possible specific. 
+                   // The previous code used /articles/likes which returned a map.
+                   // Let's assume we can rely on the previous bulk fetch logic or implement single fetch if available. 
+                   // Since I can't easily change backend, I'll use the bulk endpoints to find my count.
+                   headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+               });
+               // Wait, the previous code fetched ALL counts. Let's do that for now.
+           } catch (e) { console.error(e); }
+       };
+       fetchArticleData();
+    }
+  }, [articleIdNum, selectedArticle]);
+
+  // We need to fetch counts and user status again because we are in a fresh component
+  // Or we can lift state up, but Router separates components.
+  // Let's re-implement the data fetching for single article or reuse the bulk fetch.
+  // Re-using bulk fetch for simplicity.
+  useEffect(() => {
+      const fetchData = async () => {
+          try {
+            // Likes count
+            const likeRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/likes`, {
+                headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+            });
+            if (likeRes.ok) {
+                const data = await likeRes.json();
+                setLikeCount(data.counts[articleIdNum] || 0);
+            }
+
+            // Collection count
+            const collRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/collection-counts`, {
+                headers: { 'Authorization': `Bearer ${publicAnonKey}` }
+            });
+            if (collRes.ok) {
+                const data = await collRes.json();
+                setCollectionCount(data.counts[articleIdNum] || 0);
+            }
+
+            // User status
+            if (session?.access_token) {
+                const userLikesRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/user-likes`, {
+                    headers: { 'Authorization': `Bearer ${publicAnonKey}`, 'X-Access-Token': session.access_token }
+                });
+                if (userLikesRes.ok) {
+                    const data = await userLikesRes.json();
+                    setIsLiked(data.likes.includes(articleIdNum.toString()));
+                }
+
+                const userCollRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/user-collections`, {
+                    headers: { 'Authorization': `Bearer ${publicAnonKey}`, 'X-Access-Token': session.access_token }
+                });
+                if (userCollRes.ok) {
+                    const data = await userCollRes.json();
+                    setIsCollected(data.collections.includes(articleIdNum.toString()));
+                }
+            }
+          } catch(e) { console.error(e); }
+      };
+      fetchData();
+  }, [articleIdNum, session]);
+
+
+  const handleToggleLike = async () => {
+      if (!user || !session) {
+          toast.error("請先登入會員才能按讚喔！");
+          return;
+      }
+      try {
+          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${articleIdNum}/like`, {
+              method: 'POST',
+              headers: { 
+                  'Authorization': `Bearer ${publicAnonKey}`,
+                  'X-Access-Token': session.access_token,
+                  'Content-Type': 'application/json'
+              }
+          });
+          if (response.ok) {
+              const data = await response.json();
+              setLikeCount(data.count);
+              setIsLiked(data.liked);
+          }
+      } catch (e) { console.error(e); }
+  };
+
+  const handleToggleCollection = async () => {
+      if (!user || !session) {
+          toast.error("請先登入會員才能收藏喔！");
+          return;
+      }
+      try {
+          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${articleIdNum}/collect`, {
+              method: 'POST',
+              headers: { 
+                  'Authorization': `Bearer ${publicAnonKey}`,
+                  'X-Access-Token': session.access_token,
+                  'Content-Type': 'application/json'
+              }
+          });
+          if (response.ok) {
+              const data = await response.json();
+              setCollectionCount(data.count);
+              setIsCollected(data.collected);
+              if (data.collected) toast.success("已加入收藏！");
+              else toast.info("已取消收藏");
+          }
+      } catch (e) { console.error(e); }
+  };
+
+  if (!selectedArticle) {
+      return <div className="text-center py-20">文章不存在</div>;
+  }
+
+  return (
+      <ArticleDetail 
+        article={selectedArticle} 
+        readCount={readCount}
+        likeCount={likeCount}
+        collectionCount={collectionCount}
+        isLiked={isLiked}
+        isCollected={isCollected}
+        onToggleLike={handleToggleLike}
+        onToggleCollection={handleToggleCollection}
+        onBack={() => navigate('/parenting')} 
+      />
+  );
+}
+
+function ParentingList() {
+  const { user, session } = useAuth();
   const [readCounts, setReadCounts] = useState<Record<string, number>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
-  const [collectionCounts, setCollectionCounts] = useState<Record<string, number>>({});
   const [userLikes, setUserLikes] = useState<string[]>([]);
-  const [userCollections, setUserCollections] = useState<string[]>([]);
 
-  // Fetch read counts, like counts, and collection counts on mount
   useEffect(() => {
     const fetchCounts = async () => {
         try {
-            // Read Counts
             const readRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/counts`, {
                  headers: { 'Authorization': `Bearer ${publicAnonKey}` }
             });
@@ -42,7 +201,6 @@ export function ParentingSection() {
                 setReadCounts(data.counts);
             }
 
-            // Like Counts
             const likeRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/likes`, {
                 headers: { 'Authorization': `Bearer ${publicAnonKey}` }
             });
@@ -50,28 +208,15 @@ export function ParentingSection() {
                 const data = await likeRes.json();
                 setLikeCounts(data.counts);
             }
-
-            // Collection Counts
-            const collectionRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/collection-counts`, {
-                headers: { 'Authorization': `Bearer ${publicAnonKey}` }
-            });
-            if (collectionRes.ok) {
-                const data = await collectionRes.json();
-                setCollectionCounts(data.counts);
-            }
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
     }
     fetchCounts();
   }, []);
 
-  // Fetch user likes and collections when user changes
   useEffect(() => {
-      const fetchUserData = async () => {
+      const fetchUserLikes = async () => {
           if (!session?.access_token) return;
           try {
-              // Likes
               const likesRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/user-likes`, {
                   headers: { 
                       'Authorization': `Bearer ${publicAnonKey}`,
@@ -82,144 +227,14 @@ export function ParentingSection() {
                   const data = await likesRes.json();
                   setUserLikes(data.likes);
               }
-
-              // Collections
-              const collectionsRes = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/user-collections`, {
-                  headers: { 
-                      'Authorization': `Bearer ${publicAnonKey}`,
-                      'X-Access-Token': session.access_token
-                  }
-              });
-              if (collectionsRes.ok) {
-                  const data = await collectionsRes.json();
-                  setUserCollections(data.collections);
-              }
-          } catch (e) {
-              console.error(e);
-          }
+          } catch (e) { console.error(e); }
       };
-      if (user) {
-          fetchUserData();
-      } else {
-          setUserLikes([]);
-          setUserCollections([]);
-      }
+      if (user) fetchUserLikes();
+      else setUserLikes([]);
   }, [user, session]);
 
-  const handleArticleClick = async (id: number) => {
-      setSelectedArticleId(id);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      try {
-          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/view`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${publicAnonKey}` }
-          });
-          if (response.ok) {
-              const data = await response.json();
-              setReadCounts(prev => ({ ...prev, [id]: data.count }));
-          }
-      } catch (e) { console.error(e); }
-  }
-
-  const handleToggleLike = async (id: number) => {
-      if (!user || !session) {
-          toast.error("請先登入會員才能按讚喔！");
-          return;
-      }
-
-      if (!session.access_token) {
-          toast.error("登入已過期，請重新登入");
-          return;
-      }
-
-      try {
-          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/like`, {
-              method: 'POST',
-              headers: { 
-                  'Authorization': `Bearer ${publicAnonKey}`,
-                  'X-Access-Token': session.access_token,
-                  'Content-Type': 'application/json'
-              }
-          });
-          
-          if (response.ok) {
-              const data = await response.json();
-              setLikeCounts(prev => ({ ...prev, [id]: data.count }));
-              if (data.liked) {
-                  setUserLikes(prev => [...prev, id.toString()]);
-              } else {
-                  setUserLikes(prev => prev.filter(lid => lid !== id.toString()));
-              }
-          } else {
-              toast.error("操作失敗，請稍後再試");
-          }
-      } catch (e) {
-          console.error(e);
-          toast.error("連線錯誤");
-      }
-  };
-
-  const handleToggleCollection = async (id: number) => {
-      if (!user || !session) {
-          toast.error("請先登入會員才能收藏喔！");
-          return;
-      }
-
-      if (!session.access_token) {
-          toast.error("登入已過期，請重新登入");
-          return;
-      }
-
-      try {
-          const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/articles/${id}/collect`, {
-              method: 'POST',
-              headers: { 
-                  'Authorization': `Bearer ${publicAnonKey}`,
-                  'X-Access-Token': session.access_token,
-                  'Content-Type': 'application/json'
-              }
-          });
-          
-          if (response.ok) {
-              const data = await response.json();
-              setCollectionCounts(prev => ({ ...prev, [id]: data.count }));
-              if (data.collected) {
-                  setUserCollections(prev => [...prev, id.toString()]);
-                  toast.success("已加入收藏！");
-              } else {
-                  setUserCollections(prev => prev.filter(cid => cid !== id.toString()));
-                  toast.info("已取消收藏");
-              }
-          } else {
-              toast.error("操作失敗，請稍後再試");
-          }
-      } catch (e) {
-          console.error(e);
-          toast.error("連線錯誤");
-      }
-  };
-
-  const selectedArticle = ARTICLES.find(a => a.id === selectedArticleId);
-
-  // Featured and Recent Articles
   const featuredArticle = ARTICLES[0];
   const recentArticles = ARTICLES.slice(1);
-
-  if (selectedArticleId && selectedArticle) {
-    return (
-      <ArticleDetail 
-        article={selectedArticle} 
-        readCount={readCounts[selectedArticleId] || 0}
-        likeCount={likeCounts[selectedArticleId] || 0}
-        collectionCount={collectionCounts[selectedArticleId] || 0}
-        isLiked={userLikes.includes(selectedArticleId.toString())}
-        isCollected={userCollections.includes(selectedArticleId.toString())}
-        onToggleLike={() => handleToggleLike(selectedArticleId)}
-        onToggleCollection={() => handleToggleCollection(selectedArticleId)}
-        onBack={() => setSelectedArticleId(null)} 
-      />
-    );
-  }
 
   return (
     <div className="space-y-8 py-8">
@@ -230,7 +245,6 @@ export function ParentingSection() {
         </p>
       </div>
 
-      {/* Top Section: Author Bio + Featured Article */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
         {/* Author Bio (Left) */}
         <div className="lg:col-span-4 xl:col-span-4 h-full">
@@ -268,60 +282,61 @@ export function ParentingSection() {
 
         {/* Featured Article (Right) */}
         <div className="lg:col-span-8 xl:col-span-8 h-full">
-            <Card 
-              className="h-full cursor-pointer hover:shadow-xl transition-all duration-300 group border-stone-100 overflow-hidden bg-white relative flex flex-col md:flex-row"
-              onClick={() => handleArticleClick(featuredArticle.id)}
-            >
-              <div className="md:w-1/2 relative h-64 md:h-auto overflow-hidden">
-                <ImageWithFallback 
-                  src={featuredArticle.image}
-                  alt={featuredArticle.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 absolute inset-0"
-                />
-                <div className="absolute top-4 left-4 z-10">
-                    <Badge className="bg-white/90 text-stone-700 hover:bg-white backdrop-blur-sm shadow-sm text-sm py-1 px-3">
-                        {featuredArticle.category}
-                    </Badge>
-                </div>
-              </div>
-              
-              <CardContent className="md:w-1/2 p-6 md:p-10 flex flex-col justify-center space-y-6 bg-gradient-to-br from-white to-emerald-50/30">
-                 <div className="space-y-2">
-                    <div className="flex items-center text-xs text-stone-400 space-x-3 mb-2">
-                        <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Calendar className="w-3 h-3 mr-1" /> {featuredArticle.date}</span>
-                        <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Clock className="w-3 h-3 mr-1" /> {featuredArticle.readTime}</span>
-                        <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Eye className="w-3 h-3 mr-1" /> {readCounts[featuredArticle.id]?.toLocaleString() || 0}</span>
+            <Link to={`/parenting/${featuredArticle.id}`} className="block h-full">
+                <Card 
+                  className="h-full cursor-pointer hover:shadow-xl transition-all duration-300 group border-stone-100 overflow-hidden bg-white relative flex flex-col md:flex-row"
+                >
+                  <div className="md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+                    <ImageWithFallback 
+                      src={featuredArticle.image}
+                      alt={featuredArticle.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 absolute inset-0"
+                    />
+                    <div className="absolute top-4 left-4 z-10">
+                        <Badge className="bg-white/90 text-stone-700 hover:bg-white backdrop-blur-sm shadow-sm text-sm py-1 px-3">
+                            {featuredArticle.category}
+                        </Badge>
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-stone-800 leading-tight group-hover:text-emerald-700 transition-colors">
-                      {featuredArticle.title}
-                    </h3>
-                 </div>
-                 
-                 <p className="text-stone-500 text-base leading-relaxed">
-                    {featuredArticle.summary}
-                 </p>
-                 
-                 <div className="flex items-center justify-between pt-6 border-t border-stone-100">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="w-8 h-8 border-2 border-white shadow-sm">
-                            <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-base">
-                                👩‍💻
-                            </div>
-                        </Avatar>
-                        <span className="text-sm font-medium text-stone-600">{featuredArticle.author}</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center text-stone-400 text-xs">
-                            <Heart className={userLikes.includes(featuredArticle.id.toString()) ? "w-4 h-4 mr-1 text-pink-500 fill-pink-500" : "w-4 h-4 mr-1"} />
-                            {likeCounts[featuredArticle.id] || 0}
+                  </div>
+                  
+                  <CardContent className="md:w-1/2 p-6 md:p-10 flex flex-col justify-center space-y-6 bg-gradient-to-br from-white to-emerald-50/30">
+                     <div className="space-y-2">
+                        <div className="flex items-center text-xs text-stone-400 space-x-3 mb-2">
+                            <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Calendar className="w-3 h-3 mr-1" /> {featuredArticle.date}</span>
+                            <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Clock className="w-3 h-3 mr-1" /> {featuredArticle.readTime}</span>
+                            <span className="flex items-center bg-stone-100 px-2 py-1 rounded-full"><Eye className="w-3 h-3 mr-1" /> {readCounts[featuredArticle.id]?.toLocaleString() || 0}</span>
                         </div>
-                        <Button variant="ghost" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 p-0 h-auto font-medium group-hover:translate-x-1 transition-transform">
-                             閱讀更多 <ArrowLeft className="w-4 h-4 ml-1 rotate-180" />
-                        </Button>
-                    </div>
-                 </div>
-              </CardContent>
-            </Card>
+                        <h3 className="text-2xl md:text-3xl font-bold text-stone-800 leading-tight group-hover:text-emerald-700 transition-colors">
+                          {featuredArticle.title}
+                        </h3>
+                     </div>
+                     
+                     <p className="text-stone-500 text-base leading-relaxed">
+                        {featuredArticle.summary}
+                     </p>
+                     
+                     <div className="flex items-center justify-between pt-6 border-t border-stone-100">
+                        <div className="flex items-center gap-2">
+                            <Avatar className="w-8 h-8 border-2 border-white shadow-sm">
+                                <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-base">
+                                    👩‍💻
+                                </div>
+                            </Avatar>
+                            <span className="text-sm font-medium text-stone-600">{featuredArticle.author}</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center text-stone-400 text-xs">
+                                <Heart className={userLikes.includes(featuredArticle.id.toString()) ? "w-4 h-4 mr-1 text-pink-500 fill-pink-500" : "w-4 h-4 mr-1"} />
+                                {likeCounts[featuredArticle.id] || 0}
+                            </div>
+                            <Button variant="ghost" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 p-0 h-auto font-medium group-hover:translate-x-1 transition-transform">
+                                 閱讀更多 <ArrowLeft className="w-4 h-4 ml-1 rotate-180" />
+                            </Button>
+                        </div>
+                     </div>
+                  </CardContent>
+                </Card>
+            </Link>
         </div>
       </div>
 
@@ -333,53 +348,54 @@ export function ParentingSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card 
-              className="h-full cursor-pointer hover:shadow-xl transition-all duration-300 group border-stone-100 overflow-hidden bg-white"
-              onClick={() => handleArticleClick(article.id)}
-            >
-              <div className="aspect-video relative overflow-hidden">
-                <ImageWithFallback 
-                  src={article.image}
-                  alt={article.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-4 left-4">
-                  <Badge className="bg-white/90 text-stone-700 hover:bg-white backdrop-blur-sm">
-                    {article.category}
-                  </Badge>
-                </div>
-              </div>
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center text-xs text-stone-400 space-x-4">
-                    <span className="flex items-center"><Calendar className="w-3 h-3 mr-1" /> {article.date}</span>
-                    <span className="flex items-center"><Clock className="w-3 h-3 mr-1" /> {article.readTime}</span>
-                    <span className="flex items-center"><Eye className="w-3 h-3 mr-1" /> {readCounts[article.id]?.toLocaleString() || 0}</span>
-                </div>
-                <h3 className="text-xl font-bold text-stone-800 leading-snug group-hover:text-emerald-700 transition-colors">
-                  {article.title}
-                </h3>
-                <p className="text-stone-500 text-sm line-clamp-2 leading-relaxed">
-                  {article.summary}
-                </p>
-                <div className="flex items-center justify-between pt-4 border-t border-stone-50">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="w-6 h-6">
-                            <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-xs">
-                                👩‍💻
-                            </div>
-                        </Avatar>
-                        <span className="text-xs font-medium text-stone-600">{article.author}</span>
+            <Link to={`/parenting/${article.id}`} className="block h-full">
+                <Card 
+                  className="h-full cursor-pointer hover:shadow-xl transition-all duration-300 group border-stone-100 overflow-hidden bg-white"
+                >
+                  <div className="aspect-video relative overflow-hidden">
+                    <ImageWithFallback 
+                      src={article.image}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-white/90 text-stone-700 hover:bg-white backdrop-blur-sm">
+                        {article.category}
+                      </Badge>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center text-stone-400 text-xs">
-                            <Heart className={userLikes.includes(article.id.toString()) ? "w-3 h-3 mr-1 text-pink-500 fill-pink-500" : "w-3 h-3 mr-1"} />
-                            {likeCounts[article.id] || 0}
+                  </div>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center text-xs text-stone-400 space-x-4">
+                        <span className="flex items-center"><Calendar className="w-3 h-3 mr-1" /> {article.date}</span>
+                        <span className="flex items-center"><Clock className="w-3 h-3 mr-1" /> {article.readTime}</span>
+                        <span className="flex items-center"><Eye className="w-3 h-3 mr-1" /> {readCounts[article.id]?.toLocaleString() || 0}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-stone-800 leading-snug group-hover:text-emerald-700 transition-colors">
+                      {article.title}
+                    </h3>
+                    <p className="text-stone-500 text-sm line-clamp-2 leading-relaxed">
+                      {article.summary}
+                    </p>
+                    <div className="flex items-center justify-between pt-4 border-t border-stone-50">
+                        <div className="flex items-center gap-2">
+                            <Avatar className="w-6 h-6">
+                                <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-xs">
+                                    👩‍💻
+                                </div>
+                            </Avatar>
+                            <span className="text-xs font-medium text-stone-600">{article.author}</span>
                         </div>
-                        <span className="text-xs text-emerald-600 font-medium">閱讀更多</span>
+                        <div className="flex items-center gap-2">
+                            <div className="flex items-center text-stone-400 text-xs">
+                                <Heart className={userLikes.includes(article.id.toString()) ? "w-3 h-3 mr-1 text-pink-500 fill-pink-500" : "w-3 h-3 mr-1"} />
+                                {likeCounts[article.id] || 0}
+                            </div>
+                            <span className="text-xs text-emerald-600 font-medium">閱讀更多</span>
+                        </div>
                     </div>
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+            </Link>
           </motion.div>
         ))}
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
 import { Calculator, PiggyBank, CalendarRange, Lock, ArrowLeft, Plus, Trash2, X, Loader2, Cloud, Calendar, ChevronLeft, ChevronRight, Edit2, LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Card, CardContent } from '../ui/card';
@@ -17,75 +18,145 @@ import {
   DialogFooter,
 } from "../ui/dialog";
 
-interface ToolkitSectionProps {
-  setView: (view: string) => void;
-}
-
 const SERVER_URL = `https://${projectId}.supabase.co/functions/v1/make-server-92f3175c`;
 
-export function ToolkitSection({ setView }: ToolkitSectionProps) {
+export function ToolkitSection() {
+  return (
+    <Routes>
+      <Route index element={<ToolkitLobby />} />
+      <Route path=":toolId" element={<ToolkitWrapper />} />
+    </Routes>
+  );
+}
+
+function ToolkitWrapper() {
+  const { toolId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const [activeTool, setActiveTool] = useState<string | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
-    if (activeTool) {
-        document.body.style.overflow = 'hidden';
-        if (activeTool === 'calculator') {
-             document.body.style.touchAction = 'none';
-        } else {
-             document.body.style.overscrollBehavior = 'none';
-        }
+    if (!user) {
+        setShowLoginPrompt(true);
+    }
+  }, [user]);
+
+  const handleBack = () => navigate('/toolkit');
+
+  if (!user) {
+      return (
+        <Dialog open={showLoginPrompt} onOpenChange={(open) => {
+            if (!open) navigate('/toolkit');
+            setShowLoginPrompt(open);
+        }}>
+            <DialogContent className="sm:max-w-md rounded-3xl">
+                <DialogHeader>
+                    <DialogTitle className="text-center text-xl flex flex-col items-center gap-4 pt-4">
+                        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <Lock className="w-8 h-8 text-emerald-600" />
+                        </div>
+                        這是會員專屬功能
+                    </DialogTitle>
+                    <DialogDescription className="text-center text-stone-500 text-base pt-2">
+                        為了幫你保存零用錢紀錄、課表和心情日記，<br/>
+                        需要先登入或註冊會員才能使用喔！
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col gap-3 py-4">
+                    <Link to="/member" className="w-full">
+                        <Button 
+                            className="w-full h-12 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 rounded-xl"
+                        >
+                            <LogIn className="w-5 h-5 mr-2" />
+                            馬上登入 / 註冊
+                        </Button>
+                    </Link>
+                    <Button 
+                        variant="ghost" 
+                        onClick={() => navigate('/toolkit')}
+                        className="text-stone-400 hover:text-stone-600"
+                    >
+                        先看看別的
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+      );
+  }
+
+  const renderHeader = (icon: React.ReactNode, title: string) => (
+      <div className="flex-none px-4 py-3 bg-white/90 backdrop-blur-md shadow-sm flex items-center z-20 sticky top-0">
+        <Button variant="ghost" onClick={handleBack} className="-ml-2 text-stone-500 hover:bg-stone-100">
+            <ArrowLeft className="w-5 h-5 mr-1" /> 返回
+        </Button>
+        <div className="flex items-center gap-2 ml-2 font-bold text-stone-700 text-lg">
+            {icon} {title}
+        </div>
+    </div>
+  );
+
+  let content = null;
+  let header = null;
+
+  switch (toolId) {
+      case 'calculator':
+          header = renderHeader(<Calculator className="w-5 h-5 text-blue-500" />, "快樂計算機");
+          content = <KidCalculator />;
+          break;
+      case 'allowance':
+          header = renderHeader(<PiggyBank className="w-5 h-5 text-pink-500" />, "零用錢小帳本");
+          content = <AllowanceTracker />;
+          break;
+      case 'schedule':
+          header = renderHeader(<CalendarRange className="w-5 h-5 text-amber-500" />, "我的課表");
+          content = <ClassSchedule />;
+          break;
+      case 'calendar':
+          header = renderHeader(<Calendar className="w-5 h-5 text-purple-500" />, "心情行事曆");
+          content = <EmojiCalendar />;
+          break;
+      default:
+          return <ToolkitLobby />;
+  }
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    if (toolId === 'calculator') {
+         document.body.style.touchAction = 'none';
     } else {
-        document.body.style.overflow = '';
-        document.body.style.touchAction = '';
-        document.body.style.overscrollBehavior = '';
+         document.body.style.overscrollBehavior = 'none';
     }
     return () => {
         document.body.style.overflow = '';
         document.body.style.touchAction = '';
         document.body.style.overscrollBehavior = '';
     };
-  }, [activeTool]);
+  }, [toolId]);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-stone-50 flex flex-col overflow-hidden">
+        {header}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 overscroll-none scroll-smooth">
+            <div className="max-w-3xl mx-auto min-h-full flex flex-col">
+                {content}
+            </div>
+        </div>
+    </div>
+  );
+}
+
+function ToolkitLobby() {
+  const { user } = useAuth();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const navigate = useNavigate();
 
   const handleToolClick = (tool: string) => {
       if (!user) {
           setShowLoginPrompt(true);
       } else {
-          setActiveTool(tool);
+          navigate(tool);
       }
   };
-
-  // Only show the active tool view if user is logged in and a tool is selected
-  // (Though handleToolClick prevents selection if not logged in, this is a double check)
-  if (user && activeTool) {
-    return (
-        <div className="fixed inset-0 z-50 bg-stone-50 flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="flex-none px-4 py-3 bg-white/90 backdrop-blur-md shadow-sm flex items-center z-20">
-                <Button variant="ghost" onClick={() => setActiveTool(null)} className="-ml-2 text-stone-500 hover:bg-stone-100">
-                    <ArrowLeft className="w-5 h-5 mr-1" /> 返回
-                </Button>
-                <div className="flex items-center gap-2 ml-2 font-bold text-stone-700 text-lg">
-                    {activeTool === 'calculator' && <><Calculator className="w-5 h-5 text-blue-500" /> 快樂計算機</>}
-                    {activeTool === 'allowance' && <><PiggyBank className="w-5 h-5 text-pink-500" /> 零用錢小帳本</>}
-                    {activeTool === 'schedule' && <><CalendarRange className="w-5 h-5 text-amber-500" /> 我的課表</>}
-                    {activeTool === 'calendar' && <><Calendar className="w-5 h-5 text-purple-500" /> 心情行事曆</>}
-                </div>
-            </div>
-
-            {/* Tool Content */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-8 overscroll-none scroll-smooth">
-                <div className="max-w-3xl mx-auto min-h-full flex flex-col">
-                    {activeTool === 'calculator' && <KidCalculator />}
-                    {activeTool === 'allowance' && <AllowanceTracker />}
-                    {activeTool === 'schedule' && <ClassSchedule />}
-                    {activeTool === 'calendar' && <EmojiCalendar />}
-                </div>
-            </div>
-        </div>
-    );
-  }
 
   return (
     <div className="max-w-5xl mx-auto py-12 px-4 md:px-8 space-y-8">
@@ -148,16 +219,14 @@ export function ToolkitSection({ setView }: ToolkitSectionProps) {
                 </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3 py-4">
-                <Button 
-                    onClick={() => {
-                        setShowLoginPrompt(false);
-                        setView('member');
-                    }} 
-                    className="w-full h-12 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 rounded-xl"
-                >
-                    <LogIn className="w-5 h-5 mr-2" />
-                    馬上登入 / 註冊
-                </Button>
+                <Link to="/member" className="w-full">
+                    <Button 
+                        className="w-full h-12 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 rounded-xl"
+                    >
+                        <LogIn className="w-5 h-5 mr-2" />
+                        馬上登入 / 註冊
+                    </Button>
+                </Link>
                 <Button 
                     variant="ghost" 
                     onClick={() => setShowLoginPrompt(false)}
@@ -198,8 +267,6 @@ function ToolCard({ title, description, icon: Icon, color, onClick, isLocked }: 
         </Card>
     )
 }
-
-// --- Tools Implementation ---
 
 function KidCalculator() {
     const [display, setDisplay] = useState('0');
@@ -837,6 +904,7 @@ function EmojiCalendar() {
                                     <span className={`text-xs font-bold ${isToday ? 'text-purple-600' : 'text-stone-600'}`}>
                                         {date.getDate()}
                                     </span>
+                                    
                                     {/* Event Display or Placeholder to maintain height */}
                                     <div className="mt-1 text-2xl md:text-3xl leading-none">
                                         {event ? (
