@@ -3,7 +3,6 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Star, Heart, MessageCircle, Eye, Brain, Volume2, ShieldCheck, Info } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Link } from 'react-router-dom';
-import missionImage from "figma:asset/190fcfe4838a8353b6efa738ad820f9db6ff29a8.png";
 import { Badge } from '../../ui/badge';
 
 export const OkinawaIceCreamMission = () => {
@@ -42,7 +41,7 @@ export const OkinawaIceCreamMission = () => {
       {/* Main Image */}
       <div className="bg-white p-4 rounded-3xl shadow-sm border border-stone-100 mb-10 rotate-1 hover:rotate-0 transition-transform duration-500">
         <img 
-          src={missionImage} 
+          src="/Morimori/assets/okinawa_ice_cream.png"
           alt="Ice Cream Mission Guide" 
           className="w-full h-auto rounded-2xl"
         />
