@@ -3,7 +3,10 @@ const path = require('path');
 
 // Configuration
 const DIST_DIR = path.join(__dirname, '../dist');
-const ROUTES = [
+const SRC_DIR = path.join(__dirname, '../src');
+
+// Base routes that are always present
+const BASE_ROUTES = [
   'Morimori',
   'parenting',
   'games',
@@ -13,6 +16,28 @@ const ROUTES = [
   'member'
 ];
 
+function extractIdsFromFile(filePath, regex, prefix) {
+  if (!fs.existsSync(filePath)) {
+    console.warn(`⚠️ Warning: Source file not found: ${filePath}`);
+    return [];
+  }
+  
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const ids = [];
+  let match;
+  
+  // Create a new regex with global flag to find all matches
+  const globalRegex = new RegExp(regex, 'g');
+  
+  while ((match = globalRegex.exec(content)) !== null) {
+    if (match[1]) {
+      ids.push(`${prefix}/${match[1]}`);
+    }
+  }
+  
+  return ids;
+}
+
 async function generateStaticStructure() {
   console.log('🏗️  Starting static site generation...');
 
@@ -21,11 +46,36 @@ async function generateStaticStructure() {
     process.exit(1);
   }
 
-  // Read the main index.html
+  // 1. Get all routes including dynamic ones from article data
+  // Regex updated to be more robust with whitespace: id\s*:\s*...
+  const techArticleIds = extractIdsFromFile(
+    path.join(SRC_DIR, 'app/data/techArticles.tsx'),
+    /id\s*:\s*"([^"]+)"/, // Matches: id: "vue-1" or id : "vue-1"
+    'tech'
+  );
+
+  const parentingArticleIds = extractIdsFromFile(
+    path.join(SRC_DIR, 'app/data/articles.tsx'),
+    /id\s*:\s*(\d+)/, // Matches: id: 5 or id : 5
+    'parenting'
+  );
+
+  const allRoutes = [
+    ...BASE_ROUTES,
+    ...techArticleIds,
+    ...parentingArticleIds
+  ];
+
+  console.log(`📊 Found ${allRoutes.length} routes to generate:`);
+  console.log(`   - Base routes: ${BASE_ROUTES.length}`);
+  console.log(`   - Tech articles: ${techArticleIds.length}`);
+  console.log(`   - Parenting articles: ${parentingArticleIds.length}`);
+
+  // 2. Read the main index.html
   const indexHtml = fs.readFileSync(path.join(DIST_DIR, 'index.html'), 'utf-8');
 
-  // Process each route
-  ROUTES.forEach(route => {
+  // 3. Process each route
+  allRoutes.forEach(route => {
     const routeDir = path.join(DIST_DIR, route);
     
     // Create directory
@@ -34,7 +84,7 @@ async function generateStaticStructure() {
     }
 
     // Calculate relative path back to root (e.g., "parenting" -> "../")
-    // If route is nested "games/matching", it would be "../../"
+    // If route is nested "tech/vue-1", it would be "../../"
     const depth = route.split('/').length;
     const relativePrefix = '../'.repeat(depth);
 
@@ -42,9 +92,7 @@ async function generateStaticStructure() {
     // 1. Replace src="./" with src="../"
     // 2. Replace href="./" with href="../"
     // 3. Replace content="./" with content="../" (for og:image etc)
-    
-    // Note: We assume vite.config.ts has base: './' so paths start with "./" or just "assets/"
-    // If base is "./", vite outputs: <script src="./assets/...">
+    // 4. Handle assets/ prefix if vite base is './'
     
     let routeHtml = indexHtml
       .replace(/src="\.\//g, `src="${relativePrefix}`)
@@ -55,7 +103,7 @@ async function generateStaticStructure() {
 
     // Write the file
     fs.writeFileSync(path.join(routeDir, 'index.html'), routeHtml);
-    console.log(`✅ Generated: /${route}/index.html`);
+    // console.log(`✅ Generated: /${route}/index.html`); // Commented out to reduce noise
   });
 
   console.log('🎉 Static site structure generated successfully!');
