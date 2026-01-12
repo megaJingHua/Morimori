@@ -1647,6 +1647,285 @@ import Card from './Card.vue'
             </div>
         </div>
     )
+  },
+  {
+    id: "vue-10",
+    title: "Day 10: Teleport —— 元件的瞬間移動",
+    summary: "Teleport 讓元素渲染到別處，適合 Modal/Toast。",
+    date: "2024.11.10",
+    tags: ["Vue3", "Teleport", "Modal"],
+    readTime: "6 min",
+    author: "工程師媽媽 Mega",
+    image: "/Morimori/assets/article-image-default.png",
+    category: "Vue3 Challenge",
+    content: (
+        <div className="space-y-8 text-stone-700">
+            {/* Intro Card */}
+            <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100">
+                <div className="flex items-start gap-4">
+                     <div className="bg-emerald-100 p-3 rounded-lg text-emerald-600 hidden md:block">
+                        <Zap className="w-6 h-6" />
+                    </div>
+                    <div>
+                         <p className="mb-4 font-bold text-lg text-emerald-900">
+                            Teleport 讓元素渲染到別處，適合 Modal/Toast。
+                        </p>
+                         <p className="leading-relaxed">
+                            在 Vue 中，元件通常會渲染在它被呼叫的地方。但有些情境下，我們希望「元素出現在另一個地方」，例如 Modal 彈窗、Toast 提示。
+                            <br/>👉 Teleport 可以把元件的內容「瞬間移動」到指定的 DOM 節點（通常是 body）。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+             {/* Concept */}
+            <div className="grid md:grid-cols-2 gap-6">
+                 <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                    <strong className="text-emerald-600 block mb-2 text-lg">👩‍🍼 寶媽角度</strong>
+                    <p className="text-stone-600">
+                        在客廳按下電燈開關，結果亮的卻是陽台的燈。
+                        <br/>👉 這就是「瞬間移動」的效果：按鈕和燈泡不在同一個房間，但可以互相控制。
+                    </p>
+                </div>
+                 <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                    <strong className="text-emerald-600 block mb-2 text-lg">💻 工程師角度</strong>
+                     <p className="text-stone-600 mb-2">Teleport 語法：</p>
+                     <div className="bg-stone-900 text-stone-300 p-2 rounded text-sm font-mono mb-2">
+                        &lt;teleport to="body"&gt;<br/>
+                        &nbsp;&nbsp;&lt;div&gt;這裡的內容會渲染到 body&lt;/div&gt;<br/>
+                        &lt;/teleport&gt;
+                     </div>
+                     <ul className="list-disc pl-5 text-sm text-stone-500">
+                         <li>常見應用：Modal 彈窗、Toast 訊息、Tooltip 提示</li>
+                         <li>好處：避免 CSS 層級 (z-index) 被其他元件影響，確保 UI 能正確顯示在最上層。</li>
+                     </ul>
+                </div>
+            </div>
+
+            {/* Implementation */}
+            <div>
+                 <h3 className="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-2 border-l-4 border-emerald-500 pl-4">
+                     📦 今天的實作：Modal 彈窗
+                </h3>
+                 <p className="mb-4 text-stone-600">
+                    需求：<br/>
+                    ✅ 建立一個 Modal 彈窗元件。<br/>
+                    ✅ 點擊按鈕可以開啟/關閉 Modal。<br/>
+                    ✅ Modal 的內容實際上被渲染在 body。
+                </p>
+
+                <div className="space-y-6">
+                     {/* File 1: Modal.vue */}
+                    <div className="bg-stone-50 rounded-xl border border-stone-200 overflow-hidden">
+                         <div className="p-3 border-b border-stone-200 flex items-center justify-between bg-white">
+                             <div className="flex items-center gap-2">
+                                 <FileCode className="w-4 h-4 text-emerald-600" />
+                                 <span className="font-bold text-stone-700">Modal.vue</span>
+                                 <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded">子組件</span>
+                             </div>
+                         </div>
+                         <div className="p-4 bg-stone-900 text-stone-300 font-mono text-sm overflow-x-auto">
+<pre>{`<template>
+  <teleport to="body">
+    <div class="overlay">
+      <div class="modal">
+        <slot />
+        <button @click="$emit('close')">關閉</button>
+      </div>
+    </div>
+  </teleport>
+</template>
+
+<style scoped>
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+.modal {
+  background: white;
+  padding: 20px;
+  margin: 100px auto;
+  width: 250px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+</style>`}</pre>
+                         </div>
+                    </div>
+
+                    {/* File 2: App.vue */}
+                    <div className="bg-stone-50 rounded-xl border border-stone-200 overflow-hidden">
+                         <div className="p-3 border-b border-stone-200 flex items-center justify-between bg-white">
+                             <div className="flex items-center gap-2">
+                                 <FileCode className="w-4 h-4 text-emerald-600" />
+                                 <span className="font-bold text-stone-700">App.vue</span>
+                                 <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded">父組件</span>
+                             </div>
+                         </div>
+                         <div className="p-4 bg-stone-900 text-stone-300 font-mono text-sm overflow-x-auto">
+<pre>{`<template>
+  <button @click="show = true">打開彈窗</button>
+
+  <Modal v-if="show" @close="show = false">
+    <h2>這是彈跳視窗</h2>
+    <p>雖然我寫在 App.vue，但實際上渲染在 body！</p>
+  </Modal>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import Modal from './Modal.vue'
+
+const show = ref(false)
+</script>`}</pre>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Key Takeaways */}
+            <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                <h4 className="font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                    ✅ 學完重點
+                </h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                     <div className="bg-white p-4 rounded-lg border border-indigo-200">
+                        <strong className="text-indigo-800 block mb-1">👩‍🍼 寶媽角度</strong>
+                        <p className="text-sm text-indigo-600">客廳的開關可以控制陽台的燈，元件能「瞬間移動」到別處。</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border border-indigo-200">
+                        <strong className="text-indigo-800 block mb-1">💻 工程師角度</strong>
+                        <p className="text-sm text-indigo-600">Teleport 把元素渲染到指定節點，適合做 Modal、Toast 等全局提示元件。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+  },
+  {
+    id: "vue-11",
+    title: "Day 11: Transition —— 元件的華麗走秀",
+    summary: "Transition 幫元素加進出場動畫。",
+    date: "2024.11.11",
+    tags: ["Vue3", "Transition", "Animation"],
+    readTime: "5 min",
+    author: "工程師媽媽 Mega",
+    image: "/Morimori/assets/article-image-default.png",
+    category: "Vue3 Challenge",
+    content: (
+        <div className="space-y-8 text-stone-700">
+             {/* Intro Card */}
+             <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100">
+                <div className="flex items-start gap-4">
+                     <div className="bg-emerald-100 p-3 rounded-lg text-emerald-600 hidden md:block">
+                        <PlayCircle className="w-6 h-6" />
+                    </div>
+                    <div>
+                         <p className="mb-4 font-bold text-lg text-emerald-900">
+                            Transition 幫元素加進出場動畫。
+                        </p>
+                         <p className="leading-relaxed">
+                            在 Vue 中，當元素進入或離開畫面時，可以加上過場動畫。
+                            <br/>👉 這讓使用者感覺畫面更流暢、自然。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Concept Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
+                 <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                    <strong className="text-emerald-600 block mb-2 text-lg">👩‍🍼 寶媽角度</strong>
+                    <p className="text-stone-600 mb-2">兔寶換衣服走出房間：</p>
+                     <ul className="list-disc pl-5 text-sm text-stone-500">
+                         <li>換衣服（進入動畫）</li>
+                         <li>揮手再見（離開動畫）</li>
+                     </ul>
+                     <p className="mt-2 text-stone-600 text-sm">一個小小的動作，加上過場效果，看起來就很優雅。</p>
+                </div>
+                 <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                    <strong className="text-emerald-600 block mb-2 text-lg">💻 工程師角度</strong>
+                     <ul className="list-disc pl-5 text-sm text-stone-500 space-y-1">
+                         <li>使用 <code className="bg-stone-100 px-1 rounded">&lt;transition&gt;</code> 包裹元素。</li>
+                         <li>Vue 會在元素顯示/消失時，自動套上 class：
+                            <ul className="pl-4 mt-1 space-y-1 text-xs">
+                                <li>v-enter-from、v-enter-active、v-enter-to</li>
+                                <li>v-leave-from、v-leave-active、v-leave-to</li>
+                            </ul>
+                         </li>
+                         <li>可以透過 CSS 控制動畫效果。</li>
+                     </ul>
+                </div>
+            </div>
+
+            {/* Implementation */}
+            <div>
+                 <h3 className="text-2xl font-bold text-stone-900 mb-6 flex items-center gap-2 border-l-4 border-emerald-500 pl-4">
+                     📦 今天的實作：淡入淡出按鈕
+                </h3>
+                 <p className="mb-4 text-stone-600">
+                    需求：建立一個按鈕，點擊後顯示/隱藏文字，並附上淡入淡出效果。
+                </p>
+
+                <div className="bg-stone-50 rounded-xl border border-stone-200 overflow-hidden">
+                     <div className="p-3 border-b border-stone-200 flex items-center justify-between bg-white">
+                         <div className="flex items-center gap-2">
+                             <FileCode className="w-4 h-4 text-emerald-600" />
+                             <span className="font-bold text-stone-700">App.vue</span>
+                         </div>
+                     </div>
+                     <div className="p-4 bg-stone-900 text-stone-300 font-mono text-sm overflow-x-auto">
+<pre>{`<template>
+  <button @click="show = !show">切換文字</button>
+  <transition name="fade">
+    <p v-if="show">Hello Vue Transition!</p>
+  </transition>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+const show = ref(true)
+</script>
+
+<style scoped>
+/* 進場起點、離場終點 */
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* 進場過程、離場過程 */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+/* 進場終點、離場起點 (通常是預設值，可省略) */
+.fade-enter-to, .fade-leave-from {
+  opacity: 1;
+}
+</style>`}</pre>
+                     </div>
+                </div>
+            </div>
+
+             {/* Key Takeaways */}
+            <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                <h4 className="font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                    ✅ 學完重點
+                </h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                     <div className="bg-white p-4 rounded-lg border border-indigo-200">
+                        <strong className="text-indigo-800 block mb-1">👩‍🍼 寶媽角度</strong>
+                        <p className="text-sm text-indigo-600">加上走秀效果，動作更優雅。</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border border-indigo-200">
+                        <strong className="text-indigo-800 block mb-1">💻 工程師角度</strong>
+                        <p className="text-sm text-indigo-600">透過 <code className="bg-indigo-50 px-1 rounded">&lt;transition&gt;</code> 與 CSS class，實現元素的進出場動畫。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
   }
 ];
 

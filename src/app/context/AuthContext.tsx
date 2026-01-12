@@ -29,15 +29,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.warn("Auth session init error:", error.message);
+          // If token is invalid, ensure we are signed out to clear bad state
+          if (error.message.includes("Refresh Token")) {
+             await supabase.auth.signOut(); 
+          }
+        }
+        setSession(session);
+        setUser(session?.user ?? null);
+      } catch (err) {
+        console.error("Unexpected auth initialization error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    initSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Handle explicit sign out or token refresh failures
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        setSession(null);
+        setUser(null);
+      } else if (session) {
+        setSession(session);
+        setUser(session.user);
+      }
       setLoading(false);
     });
 
