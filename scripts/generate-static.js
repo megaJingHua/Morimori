@@ -106,6 +106,11 @@ async function generateStaticStructure() {
     // console.log(`✅ Generated: /${route}/index.html`); // Commented out to reduce noise
   });
 
+  // 4. Create a 404.html fallback for GitHub Pages
+  // This allows client-side routing to work for any paths we missed or for dynamic params
+  fs.copyFileSync(path.join(DIST_DIR, 'index.html'), path.join(DIST_DIR, '404.html'));
+  console.log('✅ Generated: /404.html (Fallback)');
+
   console.log('🎉 Static site structure generated successfully!');
 }
 
