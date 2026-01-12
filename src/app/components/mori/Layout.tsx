@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, User, BookOpen, Gamepad2, Code, Menu, X, Briefcase, LogOut, Sparkles, Plane } from 'lucide-react';
+import { Home, User, BookOpen, Gamepad2, Code, Menu, X, Briefcase, LogOut, Sparkles, Plane, Map } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -30,6 +30,7 @@ export function Layout({ children }: LayoutProps) {
     { path: '/parenting', label: '親子文章', icon: BookOpen },
     { path: '/games', label: '遊戲區', icon: Gamepad2 },
     { path: '/toolkit', label: '工具包', icon: Briefcase },
+    { path: '/travel', label: '旅遊手冊', icon: Map },
     { path: '/tech', label: '技術筆記', icon: Code },
     { path: '/english', label: '航空英文', icon: Plane },
   ];

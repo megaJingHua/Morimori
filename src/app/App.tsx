@@ -9,6 +9,7 @@ import { TechSection } from './components/mori/TechSection';
 import { MemberSection } from './components/mori/MemberSection';
 import { ToolkitSection } from './components/mori/ToolkitSection';
 import { EnglishSection } from './components/mori/EnglishSection';
+import { TravelSection } from './components/mori/TravelSection';
 import AdminDashboard from './pages/AdminDashboard';
 import ScrollToTop from './components/ScrollToTop';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="/toolkit/*" element={<ToolkitSection />} />
               <Route path="/tech/*" element={<TechSection />} />
               <Route path="/english/*" element={<EnglishSection />} />
+              <Route path="/travel/*" element={<TravelSection />} />
               <Route path="/member" element={<MemberSection />} />
               <Route path="/admin" element={<AdminDashboard onBack={() => window.location.href = '/member'} />} />
               <Route path="*" element={<Navigate to="/Morimori" replace />} />
