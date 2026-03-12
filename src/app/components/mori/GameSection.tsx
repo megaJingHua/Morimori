@@ -10,6 +10,8 @@ import { useGameTime } from '../../context/GameTimeContext';
 import { useAuth } from '../../context/AuthContext';
 import { MathGarden } from './MathGarden';
 import { ShadowGame } from './ShadowGame';
+import { PuzzleGame } from './games/PuzzleGame';
+import { WolfSheepGame } from './games/WolfSheepGame';
 import { TimeUpOverlay } from './TimeUpOverlay';
 import { playCorrectSound, playWrongSound } from '../../utils/gameAudio';
 import {
@@ -62,6 +64,24 @@ const GAMES: Game[] = [
     time: '5 分',
     image: '/Morimori/assets/shadow-game-cover.png',
     color: 'bg-orange-100 text-orange-800'
+  },
+  {
+    id: 'puzzle',
+    title: '可愛動物拼圖',
+    description: '動動小手拼出可愛動物！訓練空間邏輯與觀察力。',
+    age: '3-5 歲',
+    time: '5-10 分',
+    image: 'https://images.unsplash.com/photo-1769490314520-9adb1f4912a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXRlJTIwZG9nJTIwaWxsdXN0cmF0aW9ufGVufDF8fHx8MTc3MzE5MTE5NHww&ixlib=rb-4.1.0&q=80&w=1080',
+    color: 'bg-sky-100 text-sky-800'
+  },
+  {
+    id: 'wolfsheep',
+    title: '大野狼抓綿羊',
+    description: '經典貓捉老鼠遊戲，考驗反應與決策力！',
+    age: '3-5 歲',
+    time: '5 分',
+    image: 'https://images.unsplash.com/photo-1578760914717-4b04250b46f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b2xmJTIwc2hlZXAlMjBjYXJ0b29uJTIwY3V0ZSUyMGZvcmVzdHxlbnwxfHx8fDE3NzMzMDAxNTF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    color: 'bg-rose-100 text-rose-800'
   }
 ];
 
@@ -92,6 +112,14 @@ function GameWrapper() {
 
   if (gameId === 'shadow') {
     return <ShadowGame onExit={handleExit} />;
+  }
+
+  if (gameId === 'puzzle') {
+    return <PuzzleGame onExit={handleExit} />;
+  }
+
+  if (gameId === 'wolfsheep') {
+    return <WolfSheepGame onExit={handleExit} />;
   }
 
   // If game not found, redirect to lobby
@@ -253,7 +281,7 @@ function MatchingGame({ onExit }: { onExit: () => void }) {
   const [elapsedTime, setElapsedTime] = useState(0);
   const { startTimer, stopTimer, isTimeUp, recordGame } = useGameTime();
   const startTimeRef = useRef(Date.now());
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Lock body scroll and prevent touch gestures to improve mobile experience
   useEffect(() => {

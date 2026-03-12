@@ -214,5 +214,136 @@ The A350 is equipped with a comfortable and spacious Airspace cabin, wide seats,
         feedback: "答對了！Fuselage 是指「機身」。"
       }
     ]
+  },
+  {
+    id: 'starlux-busan-flights',
+    title: "Taiwan's Starlux Airlines to launch flights to Busan on June 1",
+    source: "僑務電子報 / CNA",
+    date: "Feb 24, 2026",
+    copyright: "Original Content © CNA / 僑務電子報",
+    image: "/Morimori/assets/article-busan.png",
+    imageCredit: "Image Source: Unsplash",
+    fullText: `Taipei, Feb. 23 (CNA) Starlux Airlines will launch direct flights on June 1 between Taoyuan and Busan, as well as the first direct route between Taichung and Busan by a Taiwanese carrier, the company announced Monday.
+
+According to Starlux, the newest international carrier in Taiwan, tickets for both routes will go on sale starting Thursday.
+
+Flights between Taoyuan International Airport and South Korea's Gimhae International Airport in Busan will be offered every day, while flights from Taichung International Airport and Busan will be offered on Tuesday, Friday, and Sunday mornings departing at 8:10 a.m.
+
+For the Taoyuan-Busan route, flights will depart from Taiwan on Monday and Wednesday mornings at 8:15 a.m. and on the other days of the week at 2:45 p.m., according to the tentative schedule released.
+
+According to Tourism Administration statistics, South Korea was the third most popular destination among Taiwanese in 2025, behind Japan and China in first and second.
+
+On the launch of Starlux's Taiwan-Busan route, Starlux Airlines CEO Glenn Chai (翟健華) said the move will not only extend the airline's international service, but also be a milestone marking Starlux's entry into the South Korean market.
+
+In addition, while both routes will be Starlux's first services between Taiwan and South Korea, the Taichung-Busan line will be the first of its kind by a Taiwanese carrier.
+
+Chai said that the Taichung-Busan route also represents an effort by Starlux to bring convenience to Taichung travelers.
+
+The new Taiwan-South Korea routes will be added to Starlux's existing 37 routes to 31 cities in North America and Asia, with Prague currently scheduled as the carrier's first service to Europe, starting Aug. 1 this year.`,
+    sentenceTranslations: {
+      "Taipei, Feb. 23 (CNA) Starlux Airlines will launch direct flights on June 1 between Taoyuan and Busan, as well as the first direct route between Taichung and Busan by a Taiwanese carrier, the company announced Monday.": "台北 2 月 23 日（中央社）星宇航空週一宣布，將於 6 月 1 日開通桃園與釜山之間的直飛航班，以及國籍航空首條台中直飛釜山的航線。",
+      "According to Starlux, the newest international carrier in Taiwan, tickets for both routes will go on sale starting Thursday.": "根據台灣最新的國際航空公司星宇航空表示，兩條航線的機票將於週四起開賣。",
+      "Flights between Taoyuan International Airport and South Korea's Gimhae International Airport in Busan will be offered every day, while flights from Taichung International Airport and Busan will be offered on Tuesday, Friday, and Sunday mornings departing at 8:10 a.m.": "桃園國際機場與韓國釜山金海國際機場之間的航班將每天提供，而從台中國際機場飛往釜山的航班則於週二、週五和週日早上 8:10 起飛。",
+      "For the Taoyuan-Busan route, flights will depart from Taiwan on Monday and Wednesday mornings at 8:15 a.m. and on the other days of the week at 2:45 p.m., according to the tentative schedule released.": "根據公布的暫定時刻表，桃園-釜山航線的航班將於週一及週三早上 8:15 從台灣起飛，一週的其他日子則於下午 2:45 起飛。",
+      "According to Tourism Administration statistics, South Korea was the third most popular destination among Taiwanese in 2025, behind Japan and China in first and second.": "根據觀光署統計，韓國是 2025 年台灣人第三大熱門旅遊目的地，僅次於排名第一及第二的日本與中國。",
+      "On the launch of Starlux's Taiwan-Busan route, Starlux Airlines CEO Glenn Chai (翟健華) said the move will not only extend the airline's international service, but also be a milestone marking Starlux's entry into the South Korean market.": "關於星宇航空開通台灣-釜山航線，星宇航空執行長翟健華表示，此舉不僅擴展了該航空公司的國際服務，更是星宇航空進軍韓國市場的一個里程碑。",
+      "In addition, while both routes will be Starlux's first services between Taiwan and South Korea, the Taichung-Busan line will be the first of its kind by a Taiwanese carrier.": "此外，這兩條航線都將是星宇航空在台灣與韓國之間的首發服務，其中台中-釜山航線更是國籍航空的首創。",
+      "Chai said that the Taichung-Busan route also represents an effort by Starlux to bring convenience to Taichung travelers.": "翟健華表示，台中-釜山航線也代表了星宇航空為台中旅客帶來便利的努力。",
+      "The new Taiwan-South Korea routes will be added to Starlux's existing 37 routes to 31 cities in North America and Asia, with Prague currently scheduled as the carrier's first service to Europe, starting Aug. 1 this year.": "新的台韓航線將加入星宇航空現有飛往北美與亞洲 31 個城市的 37 條航線，而目前布拉格預定為該航空公司飛往歐洲的首條航線，將於今年 8 月 1 日首航。"
+    },
+    segments: [
+      {
+        id: 'seg-11',
+        originalText: "Starlux Airlines will launch direct flights on June 1 between Taoyuan and Busan.",
+        highlightedPhrase: "will launch direct flights",
+        chineseExplanation: "星宇航空將於 6 月 1 日開通桃園與釜山之間的直飛航班。",
+        keyVocabulary: [
+          { word: "launch", definition: "開展、推出（新航線、產品等）" },
+          { word: "direct flights", definition: "直飛航班" }
+        ]
+      },
+      {
+        id: 'seg-12',
+        originalText: "tickets for both routes will go on sale starting Thursday.",
+        highlightedPhrase: "will go on sale",
+        chineseExplanation: "兩條航線的機票將於週四起開賣。",
+        keyVocabulary: [
+          { word: "go on sale", definition: "開始發售" },
+          { word: "route", definition: "航線、路線" }
+        ]
+      },
+      {
+        id: 'seg-13',
+        originalText: "South Korea was the third most popular destination among Taiwanese in 2025.",
+        highlightedPhrase: "the third most popular destination",
+        chineseExplanation: "韓國是 2025 年台灣人第三大熱門旅遊目的地。",
+        keyVocabulary: [
+          { word: "popular", definition: "受歡迎的" },
+          { word: "destination", definition: "目的地" }
+        ]
+      },
+      {
+        id: 'seg-14',
+        originalText: "the move will not only extend the airline's international service, but also be a milestone marking Starlux's entry into the South Korean market.",
+        highlightedPhrase: "a milestone marking",
+        chineseExplanation: "此舉更是標誌著星宇航空進軍韓國市場的一個里程碑。",
+        keyVocabulary: [
+          { word: "milestone", definition: "里程碑" },
+          { word: "extend", definition: "擴展、延伸" },
+          { word: "entry into", definition: "進入（市場等）" }
+        ]
+      },
+      {
+        id: 'seg-15',
+        originalText: "the Taichung-Busan line will be the first of its kind by a Taiwanese carrier.",
+        highlightedPhrase: "the first of its kind",
+        chineseExplanation: "台中-釜山航線更是國籍航空的首創（同類中第一個）。",
+        keyVocabulary: [
+          { word: "the first of its kind", definition: "同類中的第一個/首創" },
+          { word: "carrier", definition: "航空公司、運輸公司" }
+        ]
+      },
+      {
+        id: 'seg-16',
+        originalText: "the Taichung-Busan route also represents an effort by Starlux to bring convenience to Taichung travelers.",
+        highlightedPhrase: "bring convenience to",
+        chineseExplanation: "台中-釜山航線也代表了星宇航空為台中旅客帶來便利的努力。",
+        keyVocabulary: [
+          { word: "represent", definition: "代表" },
+          { word: "bring convenience to", definition: "為...帶來便利" }
+        ]
+      }
+    ],
+    patterns: [
+      {
+        id: 'pat-4',
+        structure: "Subject + will launch + [Product/Service] + on + [Date]",
+        example: "The tech company will launch its new smartphone on September 15."
+      },
+      {
+        id: 'pat-5',
+        structure: "not only + [Verb/Adjective/Noun], but also + [Verb/Adjective/Noun]",
+        example: "The new policy will not only improve efficiency but also reduce costs."
+      },
+      {
+        id: 'pat-6',
+        structure: "the first of its kind",
+        example: "This solar-powered aircraft is the first of its kind in the world."
+      }
+    ],
+    quiz: [
+      {
+        id: 'q-3',
+        question: "The launch of the new route will be a ________ marking the airline's entry into the new market.",
+        answer: "milestone",
+        feedback: "答對了！Milestone 是「里程碑」的意思，代表一個重要的發展階段。"
+      },
+      {
+        id: 'q-4',
+        question: "Tickets for the new flights will go on ________ starting next week.",
+        answer: "sale",
+        feedback: "做得好！Go on sale 是一個常見片語，意思是「開始發售」。"
+      }
+    ]
   }
 ];

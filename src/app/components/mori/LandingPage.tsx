@@ -38,7 +38,7 @@ export function LandingPage() {
     const fetchCount = async () => {
       try {
         const response = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/visit-count`,
+          `https://${projectId}.supabase.co/functions/v1/make-server-92f3175c/site-info`,
           {
             headers: {
               Authorization: `Bearer ${publicAnonKey}`,
@@ -50,7 +50,8 @@ export function LandingPage() {
           setVisitCount(data.count);
         }
       } catch (error) {
-        console.error("Failed to fetch visit count:", error);
+        // Silently ignore fetch errors (e.g., blocked by adblockers)
+        console.warn("Visitor count tracking blocked or unavailable.");
       }
     };
     fetchCount();

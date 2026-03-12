@@ -55,7 +55,7 @@ app.get("/make-server-92f3175c/health", (c) => {
 });
 
 // Visitor Count Endpoint
-app.get("/make-server-92f3175c/visit-count", async (c) => {
+app.get("/make-server-92f3175c/site-info", async (c) => {
   const key = "visit_count";
   try {
     const currentCountStr = await kv.get(key);

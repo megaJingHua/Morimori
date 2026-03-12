@@ -1,11 +1,149 @@
 import React from 'react';
-import { Sparkles, Check, Star, Wind, Shield, HeartHandshake, Heart, MessageCircle, Gamepad2, Sun, Flower2, Moon } from 'lucide-react';
+import { Sparkles, Check, Star, Wind, Shield, HeartHandshake, Heart, MessageCircle, Gamepad2, Sun, Flower2, Moon, Search, Image as ImageIcon } from 'lucide-react';
+
+const kagawa1 = "/Morimori/assets/kagawa1.png";
+const kagawa2 = "/Morimori/assets/kagawa2.png";
+const kagawa3 = "/Morimori/assets/kagawa3.png";
+
 const authorAvatar = "/Morimori/assets/author-avatar.png";
 const articleImage = "/Morimori/assets/article-image-default.png";
 const letterImage = "/Morimori/assets/article-letter.png";
 const notOnPurposeImage = "/Morimori/assets/article-not-on-purpose.png";
 
 export const ARTICLES = [
+  {
+    id: 7,
+    title: "當孩子狂問「為什麼」：從香川元太郎的畫像中，看見 3 歲半的觀察力",
+    summary: "原本我也帶著疑問：「3 歲半的孩子，真的看得懂複雜的迷宮嗎？」但只要換個方式「降維閱讀」，這本大迷宮反而是啟發孩子邏輯與觀察力的絕佳工具。",
+    author: "工程師媽媽 Mega",
+    authorImage: authorAvatar,
+    date: "2026.03.11",
+    readTime: "6 min",
+    category: "教養觀察",
+    image: kagawa1,
+    content: (
+      <div className="space-y-8">
+        <p className="text-lg leading-relaxed text-stone-700">
+          最近，家裡那本<span className="font-bold">香川元太郎的《知識大迷宮》</span>幾乎沒有闔上過。
+        </p>
+        <p className="text-stone-700">
+          對於標榜「全腦開發」、「高難度解謎」的經典套書，許多家長可能會疑慮：「3 歲半的孩子，真的看得懂嗎？」、「裡面的路徑這麼複雜，不會有挫折感嗎？」
+        </p>
+        <p className="text-stone-700">
+          原本我也帶著這些疑問，但這陣子陪著 3 歲半的寶哥每天沉浸其中，我發現我們低估了孩子的觀察力。只要換個方式「降維閱讀」，這本大迷宮，反而是啟發孩子社會邏輯與生活觀察的絕佳工具。
+        </p>
+        <p className="text-stone-700">
+          今天，我想分享我們在「森森邏輯」日常裡，如何用 3 歲半的視角，玩出這套書的無限可能。
+        </p>
+
+        <div className="border-t border-stone-200 my-8"></div>
+
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <Search className="w-6 h-6 text-sky-500" /> 1. 非典型玩法：從「視覺捉迷藏」開始訓練專注力
+          </h2>
+          <p className="text-stone-700">
+            對於 3 歲半的孩子，我們不強求他能精準地從起點走到終點（那往往是 5-6 歲以上的空間能力）。我們選擇將焦點縮小，玩「局部觀察」。
+          </p>
+          <p className="text-stone-700">
+            書中每一頁都充滿了令人驚嘆的細節。例如，作者會在迷宮的圖型中排出隱藏的圖案。
+          </p>
+          
+          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100">
+            <img src={kagawa1} alt="視覺捉迷藏" className="w-full rounded-xl" />
+          </div>
+          <p className="text-sm text-stone-500 italic flex items-start gap-2 bg-stone-50 p-4 rounded-xl border border-stone-100">
+            <span className="text-sky-500 font-bold shrink-0">| 圖案</span> 
+            在複雜的場景中，妳能找到藏在地形裡的番茄嗎？這對 3 歲的孩子來說，是極致的專注力挑戰。
+          </p>
+
+          <p className="text-stone-700">
+            「媽媽，我找到了！這裡有番茄！」當寶哥從看似混亂的線條中解構出圖形時，那種成就感是無可比擬的。這種玩法，訓練的是<span className="font-bold text-emerald-700">「視覺辨識度」與「前景背景的區分能力」</span>，這正是邏輯思考的基石。
+          </p>
+        </div>
+
+        <div className="border-t border-stone-200 my-8"></div>
+
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-amber-500" /> 2. 啟發想像力：「你覺得這個像什麼？」
+          </h2>
+          <p className="text-stone-700">
+            除了「找找看」，我們也玩「形狀聯想」。香川元太郎的畫風細膩，地形豐富。在共讀時，我常會問他：
+          </p>
+          <p className="text-stone-800 font-bold text-lg bg-amber-50 p-4 rounded-xl">
+            「寶哥，妳看這個地形，你覺得像什麼呢？」
+          </p>
+          
+          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100">
+            <img src={kagawa2} alt="形狀聯想" className="w-full rounded-xl" />
+          </div>
+          <p className="text-sm text-stone-500 italic flex items-start gap-2 bg-stone-50 p-4 rounded-xl border border-stone-100">
+            <span className="text-amber-500 font-bold shrink-0">| 圖案</span> 
+            一個像城堡又像大怪獸的地形，在孩子眼裡會變成什麼？
+          </p>
+
+          <p className="text-stone-700">
+            有時候他會說像一個大怪獸的肚子，有時候說像是一艘飛船。當孩子開始聯想，迷宮的線條就不再死板，而是有了生命。這是在訓練他的<span className="font-bold text-emerald-700">「抽象轉化能力」</span>，讓邏輯與創意並行。
+          </p>
+        </div>
+
+        <div className="border-t border-stone-200 my-8"></div>
+
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <MessageCircle className="w-6 h-6 text-rose-500" /> 3. 回應「為什麼」：建立世界的「因果邏輯」
+          </h2>
+          <p className="text-stone-700">
+            隨著閱讀的深入，寶哥的好奇心大爆發，問題從單純的「是什麼」轉向了「為什麼」。看著複雜的地圖，他會突然問：
+          </p>
+          <p className="text-stone-800 font-bold text-lg bg-rose-50 p-4 rounded-xl">
+            「為什麼他們在山頂上？」「他們在這個地圖做什麼？」
+          </p>
+          
+          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100">
+            <img src={kagawa3} alt="因果邏輯" className="w-full rounded-xl" />
+          </div>
+          <p className="text-sm text-stone-500 italic flex items-start gap-2 bg-stone-50 p-4 rounded-xl border border-stone-100">
+            <span className="text-rose-500 font-bold shrink-0">| 圖案</span> 
+            地圖上小人物們各司其職，這引發了孩子對社會運作的好奇。
+          </p>
+
+          <p className="text-stone-700">
+            當他問「為什麼在山頂上？」，我不會直接給予科普標準答案。我會引導他觀察：「對耶，山頂很高。你看，如果他們要喝水，要怎麼辦呢？是不是要有人從下面運水上來？所以他們可能在這裡蓋一個很厲害的水塔。」
+          </p>
+          <p className="text-stone-700">
+            當他問「他們在做什麼？」，我會跟著他一起看圖說故事：「你看，這個人手裡拿著鎚子，那個人搬著木頭，他們好像在合力蓋一棟房子喔。」
+          </p>
+          <p className="text-stone-700">
+            透過這樣的對話，我們將平面地圖轉化為一個有因果關係、有社會互動的<span className="font-bold text-emerald-700">「微縮世界」</span>。這讓 3 歲半的孩子理解：<span className="font-bold text-emerald-700">每個人的行為背後都有其目的（動機），而這些行為會產生相對應的結果。</span> 這就是邏輯在生活中的實踐。
+          </p>
+        </div>
+
+        <div className="border-t border-stone-200 my-8"></div>
+
+        <div className="bg-emerald-50/50 p-8 rounded-2xl border border-emerald-100 space-y-6">
+          <h2 className="text-2xl font-bold text-emerald-900">🌿 森森結語：尊重孩子的「閱讀主權」</h2>
+          <p className="text-stone-700">
+            這套書玩法真的很多，有時是求救故事，有時是純粹找圖。每天共讀前貫徹「提供選擇權」的教養風格，問寶哥：
+          </p>
+          <p className="text-emerald-900 font-bold text-lg bg-emerald-100/50 p-4 rounded-xl text-center">
+            「今天我們要在地圖裡找隱藏番茄？還是要看小人物在做什麼故事？」
+          </p>
+          <p className="text-stone-700">
+            讓孩子決定今天閱讀的「重點」，他才會覺得自己是這場冒險的主人。
+          </p>
+          <p className="text-stone-700">
+            如果妳家也有一個求知慾旺盛、邏輯超越同齡的孩子，不妨也試試這種「3歲半讀法」。你會驚訝地發現，在孩子的眼裡，迷宮從來就不只是迷宮，而是一個充滿「道理」與「驚喜」的新世界。
+          </p>
+        </div>
+        
+        <p className="text-xs text-stone-400 mt-8 italic text-right">
+          *本文所引用之書本圖片均出自《香川元太郎：知識大迷宮》系列，版權歸原作者及出版社所有。*
+        </p>
+      </div>
+    )
+  },
   {
     id: 5,
     title: "寫給疲憊媽媽的一封信：在教養的路上，你真的已經做得很好了",
