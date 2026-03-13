@@ -28,6 +28,10 @@ interface GameState {
   score: number;
   timeLeft: number;
   status: GameStatus;
+  playerMovingRight?: boolean;
+  enemyMovingRight?: boolean;
+  lastAteTime?: number;
+  lastHitTime?: number;
 }
 
 export function WolfSheepGame({ onExit }: { onExit: () => void }) {
@@ -43,8 +47,9 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
 
   // Constants
   const GAME_DURATION = 60; // seconds
-  const SPEED_PLAYER = 60; // units per second
-  const SPEED_AI = 40;
+  const SPEED_PLAYER = 250; // units per second (increased for drag-like responsiveness)
+  const SPEED_AI = 65; // slightly faster AI to compensate
+
 
   // Sync state to ref
   useEffect(() => {
@@ -127,7 +132,7 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
     const dt = (time - lastTimeRef.current) / 1000;
     lastTimeRef.current = time;
 
-    let { player, enemy, grass, targetPos, score, timeLeft } = stateRef.current;
+    let { player, enemy, grass, targetPos, score, timeLeft, playerMovingRight = true, enemyMovingRight = true } = stateRef.current;
     let newStatus: GameStatus = 'playing';
 
     // Update time
@@ -145,8 +150,12 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
 
     // Move Player
     if (targetPos) {
+      const prevX = player.x;
       player = moveTowards(player, targetPos, SPEED_PLAYER * dt);
       player = clampToArena(player);
+      if (player.x !== prevX) {
+          playerMovingRight = player.x > prevX;
+      }
     }
 
     const isSheepInSafeZone = (p: Point) => getDistance({x:0, y:0}, p) >= SAFE_ZONE_RADIUS;
@@ -155,6 +164,7 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
     if (role === 'sheep') {
        // AI is Wolf
        const sheepSafe = isSheepInSafeZone(player);
+       const prevEX = enemy.x;
        if (!sheepSafe) {
            // Chase sheep
            enemy = moveTowards(enemy, player, SPEED_AI * dt);
@@ -165,6 +175,7 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
               enemy = moveTowards(enemy, {x:0, y:0}, SPEED_AI * dt * 0.5);
            }
        }
+       if (enemy.x !== prevEX) enemyMovingRight = enemy.x > prevEX;
        
        // Sheep eats grass
        if (grass && getDistance(player, grass) < CHAR_SIZE) {
@@ -174,6 +185,7 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
                newStatus = 'won';
            } else {
                grass = getRandomDangerPos();
+               stateRef.current.lastAteTime = time;
            }
        }
        
@@ -181,6 +193,7 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
        if (!sheepSafe && getDistance(player, enemy) < CHAR_SIZE) {
            newStatus = 'lost';
            playWrongSound();
+           stateRef.current.lastHitTime = time;
        }
        
     } else {
@@ -192,6 +205,7 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
        
        const distToWolf = getDistance(enemy, player);
        const sheepSafe = isSheepInSafeZone(enemy);
+       const prevEX = enemy.x;
        
        if (distToWolf < 40 && !sheepSafe) {
            // Run away from wolf towards safe zone
@@ -225,15 +239,22 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
        }
        
        enemy = clampToArena(enemy);
+       if (enemy.x !== prevEX) enemyMovingRight = enemy.x > prevEX;
        
        // Wolf catches sheep
        if (!isSheepInSafeZone(enemy) && getDistance(player, enemy) < CHAR_SIZE) {
            newStatus = 'won';
            playCorrectSound();
+           stateRef.current.lastHitTime = time;
        }
     }
 
-    const newState = { player, enemy, grass, targetPos, score, timeLeft, status: newStatus };
+    const newState = { 
+        player, enemy, grass, targetPos, score, timeLeft, status: newStatus, 
+        playerMovingRight, enemyMovingRight, 
+        lastAteTime: stateRef.current.lastAteTime, 
+        lastHitTime: stateRef.current.lastHitTime 
+    };
     setGameState(newState);
 
     if (newStatus === 'playing') {
@@ -251,7 +272,12 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
     updateTargetPos(e);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -390,9 +416,11 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
        <div className="flex-1 w-full flex items-center justify-center p-4">
            {/* Responsive square container */}
            <div 
-              className="relative w-full max-w-[500px] aspect-square bg-emerald-700 rounded-full shadow-inner overflow-hidden border-8 border-emerald-800"
+              className={`relative w-full max-w-[500px] aspect-square bg-emerald-700 rounded-full shadow-inner overflow-hidden border-8 border-emerald-800 transition-colors duration-150 ${gameState?.lastAteTime && performance.now() - gameState.lastAteTime < 300 ? 'bg-emerald-500 border-emerald-400 scale-[1.02]' : ''} ${gameState?.lastHitTime && performance.now() - gameState.lastHitTime < 300 ? 'bg-rose-700 border-rose-800 scale-[0.98]' : ''}`}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
            >
                {/* Safe Zone indicator (outer ring is safe, so inner is danger) */}
                <div 
@@ -414,7 +442,7 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
                          className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
                       >
                           <div className="bg-black/60 text-white px-6 py-3 rounded-full font-bold text-lg backdrop-blur-sm">
-                              點擊畫面移動
+                              在畫面中拖拉來移動！
                           </div>
                       </motion.div>
                   )}
@@ -433,7 +461,8 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
                           pos={role === 'sheep' ? gameState.player : gameState.enemy} 
                           size={CHAR_SIZE} 
                           emoji="🐑" 
-                          isPlayer={role === 'sheep'} 
+                          isPlayer={role === 'sheep'}
+                          flip={role === 'sheep' ? gameState.playerMovingRight : gameState.enemyMovingRight}
                        />
 
                        {/* Wolf */}
@@ -441,7 +470,8 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
                           pos={role === 'wolf' ? gameState.player : gameState.enemy} 
                           size={CHAR_SIZE} 
                           emoji="🐺" 
-                          isPlayer={role === 'wolf'} 
+                          isPlayer={role === 'wolf'}
+                          flip={role === 'wolf' ? gameState.playerMovingRight : gameState.enemyMovingRight}
                        />
                    </>
                )}
@@ -455,14 +485,14 @@ export function WolfSheepGame({ onExit }: { onExit: () => void }) {
   );
 }
 
-function Entity({ pos, size, emoji, isPlayer, isPulse }: { pos: Point, size: number, emoji: string, isPlayer?: boolean, isPulse?: boolean }) {
+function Entity({ pos, size, emoji, isPlayer, isPulse, flip }: { pos: Point, size: number, emoji: string, isPlayer?: boolean, isPulse?: boolean, flip?: boolean }) {
     // Map -100..100 to 0..100%
     const left = `${(pos.x / ARENA_RADIUS) * 50 + 50}%`;
     const top = `${(pos.y / ARENA_RADIUS) * 50 + 50}%`;
     
     return (
         <div 
-           className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-75"
+           className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-75 pointer-events-none"
            style={{ 
                left, 
                top, 
@@ -470,7 +500,7 @@ function Entity({ pos, size, emoji, isPlayer, isPulse }: { pos: Point, size: num
                height: `${(size / (ARENA_RADIUS * 2)) * 100}%` 
            }}
         >
-            <div className={`relative flex items-center justify-center w-full h-full text-3xl md:text-5xl drop-shadow-md ${isPulse ? 'animate-pulse' : ''}`}>
+            <div className={`relative flex items-center justify-center w-full h-full text-3xl md:text-5xl drop-shadow-md ${isPulse ? 'animate-pulse' : ''} ${flip ? 'scale-x-[-1]' : ''}`}>
                 {isPlayer && (
                     <div className="absolute inset-0 bg-white/30 rounded-full scale-150 animate-ping" />
                 )}
