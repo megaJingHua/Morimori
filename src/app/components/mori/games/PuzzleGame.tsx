@@ -15,12 +15,30 @@ import {
   DialogTrigger,
 } from "../../ui/dialog";
 
-const PUZZLE_IMAGE = "https://images.unsplash.com/photo-1769490314520-9adb1f4912a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXRlJTIwZG9nJTIwaWxsdXN0cmF0aW9ufGVufDF8fHx8MTc3MzE5MTE5NHww&ixlib=rb-4.1.0&q=80&w=1080";
+const ANIMAL_EMOJIS = ['🐶', '🐱', '🦁', '🐯', '🐻', '🐼', '🦊', '🐨', '🐰', '🐸', '🐷', '🐵'];
+
+const PieceView = ({ pieceId, gridSize, emoji }: { pieceId: number, gridSize: number, emoji: string }) => {
+    const pieceWidth = 100 / gridSize;
+    const pieceHeight = 100 / gridSize;
+    const col = pieceId % gridSize;
+    const row = Math.floor(pieceId / gridSize);
+    const x = col * pieceWidth;
+    const y = row * pieceHeight;
+    const viewBox = `${x} ${y} ${pieceWidth} ${pieceHeight}`;
+
+    return (
+        <svg viewBox={viewBox} className="w-full h-full drop-shadow-sm">
+            <text x="50" y="50" fontSize="80" textAnchor="middle" dominantBaseline="central">{emoji}</text>
+        </svg>
+    );
+};
 
 export function PuzzleGame({ onExit }: { onExit: () => void }) {
   const [gridSize, setGridSize] = useState(2); // Start with 2x2 for 3-5yo
-  const [board, setBoard] = useState<number[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [board, setBoard] = useState<(number | null)[]>([]);
+  const [tray, setTray] = useState<number[]>([]);
+  const [selectedTrayPiece, setSelectedTrayPiece] = useState<number | null>(null);
+  const [puzzleEmoji, setPuzzleEmoji] = useState('🐶');
   
   const [isWon, setIsWon] = useState(false);
   const [moves, setMoves] = useState(0);
@@ -79,47 +97,81 @@ export function PuzzleGame({ onExit }: { onExit: () => void }) {
   const initializeGame = (size: number) => {
     const total = size * size;
     const pieces = Array.from({ length: total }, (_, i) => i);
+    const shuffled = [...pieces].sort(() => Math.random() - 0.5);
     
-    let shuffled = [...pieces].sort(() => Math.random() - 0.5);
-    // Ensure the puzzle is not already solved
-    while (shuffled.every((p, i) => p === i)) {
-      shuffled = [...pieces].sort(() => Math.random() - 0.5);
-    }
-
-    setBoard(shuffled);
-    setSelectedIndex(null);
+    setBoard(Array(total).fill(null));
+    setTray(shuffled);
+    setSelectedTrayPiece(null);
     setIsWon(false);
     setMoves(0);
     setElapsedTime(0);
     startTimeRef.current = Date.now();
+    setPuzzleEmoji(ANIMAL_EMOJIS[Math.floor(Math.random() * ANIMAL_EMOJIS.length)]);
   };
 
-  const handlePieceClick = (index: number) => {
+  const handleTrayClick = (pieceId: number) => {
+    if (isWon) return;
+    if (selectedTrayPiece === pieceId) {
+        setSelectedTrayPiece(null);
+    } else {
+        setSelectedTrayPiece(pieceId);
+        playCorrectSound();
+    }
+  };
+
+  const handleBoardClick = (index: number) => {
     if (isWon) return;
 
-    if (selectedIndex === null) {
-      setSelectedIndex(index);
-      playCorrectSound(); // Small sound for feedback
-    } else {
-      if (selectedIndex === index) {
-        // Deselect
-        setSelectedIndex(null);
-      } else {
-        // Swap
-        const newBoard = [...board];
-        [newBoard[selectedIndex], newBoard[index]] = [newBoard[index], newBoard[selectedIndex]];
-        setBoard(newBoard);
-        setSelectedIndex(null);
-        setMoves(m => m + 1);
-        
-        if (newBoard.every((p, i) => p === i)) {
-          handleWin();
+    const newBoard = [...board];
+    const newTray = [...tray];
+
+    if (newBoard[index] !== null) {
+        // Slot is occupied
+        if (selectedTrayPiece !== null) {
+            // Replace piece
+            const pieceToReturn = newBoard[index]!;
+            newBoard[index] = selectedTrayPiece;
+            const trayIndex = newTray.indexOf(selectedTrayPiece);
+            if (trayIndex > -1) {
+                newTray.splice(trayIndex, 1);
+            }
+            newTray.push(pieceToReturn);
+            setBoard(newBoard);
+            setTray(newTray);
+            setSelectedTrayPiece(null);
+            setMoves(m => m + 1);
+            playCorrectSound();
+            checkWin(newBoard);
         } else {
-          // Play a small tick/swap sound (using correct sound as a generic pop)
-          playCorrectSound();
+            // Return piece to tray
+            const pieceToReturn = newBoard[index]!;
+            newBoard[index] = null;
+            newTray.push(pieceToReturn);
+            setBoard(newBoard);
+            setTray(newTray);
+            setMoves(m => m + 1);
+            playCorrectSound();
         }
-      }
+    } else if (selectedTrayPiece !== null) {
+        // Slot is empty and a piece is selected
+        newBoard[index] = selectedTrayPiece;
+        const trayIndex = newTray.indexOf(selectedTrayPiece);
+        if (trayIndex > -1) {
+            newTray.splice(trayIndex, 1);
+        }
+        setBoard(newBoard);
+        setTray(newTray);
+        setSelectedTrayPiece(null);
+        setMoves(m => m + 1);
+        playCorrectSound();
+        checkWin(newBoard);
     }
+  };
+
+  const checkWin = (currentBoard: (number | null)[]) => {
+      if (currentBoard.every((p, i) => p === i)) {
+          handleWin();
+      }
   };
 
   const handleWin = () => {
@@ -135,21 +187,12 @@ export function PuzzleGame({ onExit }: { onExit: () => void }) {
       });
   };
 
-  const getBackgroundPosition = (id: number, size: number) => {
-    if (size <= 1) return '0% 0%';
-    const row = Math.floor(id / size);
-    const col = id % size;
-    const x = (col / (size - 1)) * 100;
-    const y = (row / (size - 1)) * 100;
-    return `${x}% ${y}%`;
-  };
-
   if (isTimeUp) {
       return <TimeUpOverlay onExit={onExit} />;
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-50 flex flex-col select-none overflow-hidden touch-none bg-sky-50">
+    <div className="fixed inset-0 z-50 flex flex-col select-none overflow-hidden touch-none bg-sky-50">
       {/* Header */}
       <div className="flex-none px-4 py-3 bg-white/90 backdrop-blur-md shadow-sm flex justify-between items-center z-20">
         <Button variant="ghost" onClick={onExit} className="text-stone-500 hover:bg-stone-100 -ml-2">
@@ -170,9 +213,9 @@ export function PuzzleGame({ onExit }: { onExit: () => void }) {
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 w-full flex flex-col items-center justify-center p-4 overflow-hidden relative">
+      <div className="flex-1 w-full flex flex-col items-center justify-start pt-6 p-4 overflow-hidden relative">
          {!isWon ? (
-            <div className="w-full h-full max-w-md max-h-[80vh] flex flex-col justify-center items-center gap-6">
+            <div className="w-full h-full max-w-md flex flex-col items-center gap-6">
                 
                 {/* Level Toggle */}
                 <div className="flex bg-white/60 p-1 rounded-full shadow-sm">
@@ -194,54 +237,73 @@ export function PuzzleGame({ onExit }: { onExit: () => void }) {
                     </Button>
                 </div>
 
-                <div className="relative w-full aspect-square max-w-[320px] md:max-w-[400px] bg-white rounded-2xl shadow-lg border-4 border-white overflow-hidden">
-                    {/* Background Hint */}
-                    <div 
-                        className="absolute inset-0 opacity-20 pointer-events-none"
-                        style={{
-                            backgroundImage: `url(${PUZZLE_IMAGE})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                        }}
-                    />
+                {/* Puzzle Board */}
+                <div 
+                    className="relative w-full aspect-square max-w-[280px] md:max-w-[360px] bg-stone-200/50 rounded-2xl shadow-inner border-4 border-stone-300 p-2 gap-2 mx-auto grid"
+                    style={{
+                        gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+                        gridTemplateRows: `repeat(${gridSize}, 1fr)`,
+                    }}
+                >
+                    {/* Background Hint - Full Image */}
+                    <div className="absolute inset-0 opacity-[0.08] pointer-events-none flex items-center justify-center z-0">
+                        <svg viewBox="0 0 100 100" className="w-full h-full">
+                            <text x="50" y="50" fontSize="80" textAnchor="middle" dominantBaseline="central">{puzzleEmoji}</text>
+                        </svg>
+                    </div>
                     
-                    {/* Puzzle Grid */}
-                    <div 
-                        className="absolute inset-0 grid gap-1"
-                        style={{
-                            gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-                            gridTemplateRows: `repeat(${gridSize}, 1fr)`,
-                            padding: '4px',
-                            backgroundColor: '#f3f4f6'
-                        }}
-                    >
-                        {board.map((pieceId, index) => {
-                            const isSelected = selectedIndex === index;
-                            return (
-                                <motion.div
-                                    key={index}
-                                    layout
-                                    onClick={() => handlePieceClick(index)}
-                                    className={`relative cursor-pointer rounded-lg overflow-hidden shadow-sm transition-all duration-200
-                                        ${isSelected ? 'ring-4 ring-yellow-400 z-10 scale-[0.95]' : 'hover:scale-[0.98] z-0'}
-                                    `}
-                                    style={{
-                                        backgroundImage: `url(${PUZZLE_IMAGE})`,
-                                        backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
-                                        backgroundPosition: getBackgroundPosition(pieceId, gridSize),
-                                    }}
+                    {/* Board Slots */}
+                    {board.map((pieceId, index) => (
+                        <div 
+                            key={`slot-${index}`}
+                            onClick={() => handleBoardClick(index)}
+                            className={`relative rounded-xl overflow-hidden cursor-pointer transition-colors duration-200 z-10 flex items-center justify-center
+                                ${pieceId === null 
+                                    ? (selectedTrayPiece !== null ? 'bg-sky-100 hover:bg-sky-200 border-2 border-dashed border-sky-300' : 'bg-stone-100/50 border-2 border-dashed border-stone-300') 
+                                    : 'bg-white shadow-sm border-2 border-transparent hover:border-red-300'}
+                            `}
+                        >
+                            {pieceId !== null && (
+                                <motion.div 
+                                    initial={{ scale: 0.5, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    className="w-full h-full bg-white"
                                 >
-                                    {isSelected && (
-                                        <div className="absolute inset-0 bg-yellow-400/20" />
-                                    )}
+                                    <PieceView pieceId={pieceId} gridSize={gridSize} emoji={puzzleEmoji} />
                                 </motion.div>
-                            );
-                        })}
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Tray */}
+                <div className="w-full max-w-md mx-auto bg-white/60 p-4 rounded-3xl shadow-sm border border-white">
+                    <div className="text-center text-stone-500 font-medium mb-3 text-sm">
+                        {tray.length > 0 ? '請選擇下方拼圖，然後點擊上方空格' : '拼圖都放上去了！'}
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-3 min-h-[80px]">
+                        <AnimatePresence>
+                            {tray.map(pieceId => (
+                                <motion.div
+                                    key={`tray-${pieceId}`}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    onClick={() => handleTrayClick(pieceId)}
+                                    className={`w-[60px] h-[60px] md:w-[72px] md:h-[72px] bg-white rounded-xl shadow-sm cursor-pointer overflow-hidden transition-all duration-200 border-4 shrink-0
+                                        ${selectedTrayPiece === pieceId ? 'border-amber-400 ring-4 ring-amber-400/30 scale-110' : 'border-stone-100 hover:border-amber-200 hover:scale-105'}
+                                    `}
+                                >
+                                    <PieceView pieceId={pieceId} gridSize={gridSize} emoji={puzzleEmoji} />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </div>
                 </div>
                 
                 {/* Advice Tip Trigger */}
-                <div className="flex justify-center">
+                <div className="flex justify-center mt-auto pb-4">
                     <Dialog>
                         <DialogTrigger asChild>
                              <Button variant="ghost" size="sm" className="text-stone-400 hover:text-stone-600 gap-1 rounded-full text-xs">
@@ -255,8 +317,8 @@ export function PuzzleGame({ onExit }: { onExit: () => void }) {
                                     <User className="w-5 h-5 text-sky-400" />
                                     給爸媽的陪玩建議
                                 </DialogTitle>
-                                <DialogDescription className="pt-2 text-stone-600 leading-relaxed">
-                                    拼圖能訓練孩子的空間邏輯與觀察力。先從「簡單(2x2)」開始，引導孩子觀察狗狗的眼睛、耳朵等特徵，讓他們建立自信後再挑戰3x3喔！
+                                <DialogDescription className="pt-2 text-stone-600 leading-relaxed text-left">
+                                    將拼圖從「置換」改為「點選放置」，更符合3歲孩子的直覺。先引導孩子點選下方的動物拼圖，再點擊上方的空格。您可以引導他們觀察動物的眼睛、耳朵特徵，建立空間對應的概念！
                                 </DialogDescription>
                              </DialogHeader>
                         </DialogContent>
@@ -267,7 +329,7 @@ export function PuzzleGame({ onExit }: { onExit: () => void }) {
              <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="text-center space-y-6 relative max-w-sm mx-auto bg-white/90 p-8 rounded-3xl shadow-xl backdrop-blur-sm"
+                className="text-center space-y-6 relative w-full max-w-sm mx-auto bg-white/90 p-8 rounded-3xl shadow-xl backdrop-blur-sm mt-10"
              >
                  {/* Celebration Particles */}
                  {Array.from({ length: 20 }).map((_, i) => (
@@ -287,8 +349,10 @@ export function PuzzleGame({ onExit }: { onExit: () => void }) {
                     />
                  ))}
 
-                 <div className="w-48 h-48 mx-auto relative rounded-2xl overflow-hidden border-4 border-white shadow-lg z-10">
-                     <img src={PUZZLE_IMAGE} alt="Completed Puzzle" className="w-full h-full object-cover" />
+                 <div className="w-48 h-48 mx-auto relative rounded-2xl overflow-hidden border-4 border-white shadow-lg z-10 bg-amber-50 flex items-center justify-center">
+                     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
+                        <text x="50" y="50" fontSize="80" textAnchor="middle" dominantBaseline="central">{puzzleEmoji}</text>
+                     </svg>
                      <motion.div 
                          initial={{ opacity: 0 }}
                          animate={{ opacity: 1 }}
@@ -298,18 +362,31 @@ export function PuzzleGame({ onExit }: { onExit: () => void }) {
                  </div>
                  
                  <div className="relative z-10 space-y-4 pt-2">
-                    <h2 className="text-3xl font-bold text-stone-800">拼圖完成！</h2>
-                    <div className="flex justify-center gap-4 text-stone-500 font-mono text-lg bg-stone-50 py-2 rounded-xl">
-                        <span className="flex items-center gap-1"><Clock className="w-5 h-5 text-stone-400"/> {formatTime(elapsedTime)}</span>
-                        <span className="text-stone-300">|</span>
-                        <span>{moves + 1} 步</span>
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 text-yellow-500 mb-2 shadow-sm">
+                        <Trophy className="w-8 h-8" />
                     </div>
-                    <p className="text-lg text-sky-600 font-medium pt-2">好棒的觀察力！🌟</p>
+                    <h2 className="text-3xl font-bold text-stone-800">太棒了！</h2>
+                    <p className="text-stone-500">
+                        你用了 {moves} 步完成<br/>
+                        花了 {formatTime(elapsedTime)} 的時間
+                    </p>
+                    
+                    <div className="pt-4 flex gap-3 justify-center">
+                        <Button 
+                            onClick={onExit}
+                            variant="outline" 
+                            className="rounded-full px-6"
+                        >
+                            回大廳
+                        </Button>
+                        <Button 
+                            onClick={() => initializeGame(gridSize)}
+                            className="rounded-full px-6 bg-sky-500 hover:bg-sky-600 text-white shadow-sm hover:shadow"
+                        >
+                            <RefreshCw className="w-4 h-4 mr-2" /> 再玩一次
+                        </Button>
+                    </div>
                  </div>
-
-                 <Button onClick={() => initializeGame(gridSize)} size="lg" className="relative z-10 rounded-full bg-sky-500 hover:bg-sky-600 text-white text-lg px-8 py-6 w-full shadow-lg shadow-sky-200">
-                    <RefreshCw className="w-5 h-5 mr-2" /> 再玩一次
-                 </Button>
              </motion.div>
          )}
       </div>

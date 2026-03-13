@@ -16,18 +16,10 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-const kagawa0 =
-  "/Morimori/assets/f1b02335-9690-4a79-8751-cc1ea2a99c5b.png";
-const kagawa1 = "/Morimori/assets/k1.jpg";
-const kagawa2 = "/Morimori/assets/k22.jpg";
-const kagawa3 = "/Morimori/assets/k33.jpg";
-
 const authorAvatar = "/Morimori/assets/author-avatar.png";
-const articleImage =
-  "/Morimori/assets/article-image-default.png";
+const articleImage = "/Morimori/assets/article-image-default.png";
 const letterImage = "/Morimori/assets/article-letter.png";
-const notOnPurposeImage =
-  "/Morimori/assets/article-not-on-purpose.png";
+const notOnPurposeImage = "/Morimori/assets/article-not-on-purpose.png";
 
 export const ARTICLES = [
   {
@@ -41,7 +33,7 @@ export const ARTICLES = [
     date: "2026.03.11",
     readTime: "6 min",
     category: "教養觀察",
-    image: kagawa0,
+    image: "/Morimori/assets/f1b02335-9690-4a79-8751-cc1ea2a99c5b.png",
     content: (
       <div className="space-y-8">
         <p className="text-lg leading-relaxed text-stone-700">
@@ -81,11 +73,11 @@ export const ARTICLES = [
             書中每一頁都充滿了令人驚嘆的細節。例如，作者會在迷宮的圖型中排出隱藏的圖案。
           </p>
 
-          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100">
+          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100 flex justify-center">
             <img
-              src={kagawa1}
+              src="/Morimori/assets/k1.jpg"
               alt="視覺捉迷藏"
-              className="w-full rounded-xl"
+              className="rounded-xl max-w-full"
             />
           </div>
           <p className="text-sm text-stone-500 italic flex items-start gap-2 bg-stone-50 p-4 rounded-xl border border-stone-100">
@@ -119,11 +111,11 @@ export const ARTICLES = [
             「寶哥，妳看這個地形，你覺得像什麼呢？」
           </p>
 
-          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100">
+          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100 flex justify-center">
             <img
-              src={kagawa2}
+              src="/Morimori/assets/k22.jpg"
               alt="形狀聯想"
-              className="w-full rounded-xl"
+              className="rounded-xl max-w-full"
             />
           </div>
           <p className="text-sm text-stone-500 italic flex items-start gap-2 bg-stone-50 p-4 rounded-xl border border-stone-100">
@@ -156,11 +148,11 @@ export const ARTICLES = [
             「為什麼他們在山頂上？」「他們在這個地圖做什麼？」
           </p>
 
-          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100">
+          <div className="bg-white p-2 rounded-2xl shadow-sm border border-stone-100 flex justify-center">
             <img
-              src={kagawa3}
+              src="/Morimori/assets/k33.jpg"
               alt="因果邏輯"
-              className="w-full rounded-xl"
+              className="rounded-xl max-w-full"
             />
           </div>
           <p className="text-sm text-stone-500 italic flex items-start gap-2 bg-stone-50 p-4 rounded-xl border border-stone-100">
