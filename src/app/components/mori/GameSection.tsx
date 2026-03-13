@@ -12,6 +12,7 @@ import { MathGarden } from './MathGarden';
 import { ShadowGame } from './ShadowGame';
 import { PuzzleGame } from './games/PuzzleGame';
 import { WolfSheepGame } from './games/WolfSheepGame';
+import { WhackAMoleGame } from './games/WhackAMoleGame';
 import { TimeUpOverlay } from './TimeUpOverlay';
 import { playCorrectSound, playWrongSound } from '../../utils/gameAudio';
 import {
@@ -82,6 +83,15 @@ const GAMES: Game[] = [
     time: '5 分',
     image: 'https://images.unsplash.com/photo-1578760914717-4b04250b46f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b2xmJTIwc2hlZXAlMjBjYXJ0b29uJTIwY3V0ZSUyMGZvcmVzdHxlbnwxfHx8fDE3NzMzMDAxNTF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
     color: 'bg-rose-100 text-rose-800'
+  },
+  {
+    id: 'whackamole',
+    title: '打地鼠遊戲',
+    description: '小地鼠隨機出現，看到就點！訓練寶寶的手眼協調與專注力。',
+    age: '3-5 歲',
+    time: '3 分',
+    image: 'https://images.unsplash.com/photo-1547139427-b5aa332ebfd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXRlJTIwY2FydG9vbiUyMG1vbGUlMjBob2xlJTIwZ2FtZXxlbnwxfHx8fDE3NzMzOTE5NTN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    color: 'bg-orange-100 text-orange-800'
   }
 ];
 
@@ -120,6 +130,10 @@ function GameWrapper() {
 
   if (gameId === 'wolfsheep') {
     return <WolfSheepGame onExit={handleExit} />;
+  }
+
+  if (gameId === 'whackamole') {
+    return <WhackAMoleGame onExit={handleExit} />;
   }
 
   // If game not found, redirect to lobby
