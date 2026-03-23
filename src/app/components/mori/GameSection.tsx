@@ -45,11 +45,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import whackAMoleCover from "/Morimori/assets/unnamed3.jpg";
-import whackAMoleMobileCover from "/Morimori/assets/unnamed3.jpg";
 
 // Use static asset path instead of Figma import
 const forestBg = "/Morimori/assets/forest-bg.png";
+const whackAMoleCover = "/Morimori/assets/unnamed3.jpg";
+const whackAMoleMobileCover = "/Morimori/assets/unnamed3.jpg";
 
 // Game Types
 interface Game {

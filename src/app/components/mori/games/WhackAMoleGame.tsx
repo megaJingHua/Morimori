@@ -27,11 +27,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../ui/dialog";
-import hammerImage from "/Morimori/assets/pk.png";
-import mobileStartImage from "/Morimori/assets/unnamed4.jpg";
-import desktopStartImage from "/Morimori/assets/unnamed5.jpg";
-import mobileBgImage from "/Morimori/assets/unnamed1.jpg";
-import desktopBgImage from "/Morimori/assets/unnamed.jpg";
+const hammerImage = "/Morimori/assets/pk.png";
+const mobileStartImage = "/Morimori/assets/unnamed4.jpg";
+const desktopStartImage = "/Morimori/assets/unnamed5.jpg";
+const mobileBgImage = "/Morimori/assets/unnamed1.jpg";
+const desktopBgImage = "/Morimori/assets/unnamed.jpg";
 
 const GAME_DURATION = 30;
 
