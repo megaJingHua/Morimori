@@ -23,6 +23,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import whackAMoleCover from 'figma:asset/13b5c4bbf07c9259fcae61f28b9c59d1e96b0af0.png';
+import whackAMoleMobileCover from 'figma:asset/e3d897c9e1dcf73a163b324030c07aaaaf7a4c07.png';
 
 // Use static asset path instead of Figma import
 const forestBg = '/Morimori/assets/forest-bg.png';
@@ -35,6 +37,7 @@ interface Game {
   age: string;
   time: string;
   image: string;
+  mobileImage?: string;
   color: string;
 }
 
@@ -90,7 +93,8 @@ const GAMES: Game[] = [
     description: '小地鼠隨機出現，看到就點！訓練寶寶的手眼協調與專注力。',
     age: '3-5 歲',
     time: '3 分',
-    image: 'https://images.unsplash.com/photo-1547139427-b5aa332ebfd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjdXRlJTIwY2FydG9vbiUyMG1vbGUlMjBob2xlJTIwZ2FtZXxlbnwxfHx8fDE3NzMzOTE5NTN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    image: whackAMoleCover,
+    mobileImage: whackAMoleMobileCover,
     color: 'bg-orange-100 text-orange-800'
   }
 ];
@@ -236,11 +240,20 @@ function GameLobby() {
                       {/* Overlay to ensure text readability if needed, or keeping it clean */}
                    </div>
                 ) : (
-                    <ImageWithFallback 
-                        src={game.image}
-                        alt={game.title}
-                        className="w-full h-full object-cover"
-                    />
+                    <>
+                      <ImageWithFallback 
+                          src={game.image}
+                          alt={game.title}
+                          className={`w-full h-full object-cover ${game.mobileImage ? 'hidden sm:block' : ''}`}
+                      />
+                      {game.mobileImage && (
+                        <ImageWithFallback 
+                            src={game.mobileImage}
+                            alt={game.title}
+                            className="w-full h-full object-cover sm:hidden"
+                        />
+                      )}
+                    </>
                 )}
                 <div className="absolute top-4 left-4">
                   <Badge className={`${game.color} hover:${game.color}`}>
