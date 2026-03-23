@@ -45,8 +45,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import whackAMoleCover from "/Morimori/assets/unnamed (3).png";
-import whackAMoleMobileCover from "/Morimori/assets/unnamed (3).png";
+import whackAMoleCover from "/Morimori/assets/unnamed(3).png";
+import whackAMoleMobileCover from "/Morimori/assets/unnamed(3).png";
 
 // Use static asset path instead of Figma import
 const forestBg = "/Morimori/assets/forest-bg.png";

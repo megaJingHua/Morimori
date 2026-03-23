@@ -28,9 +28,9 @@ import {
   DialogTrigger,
 } from "../../ui/dialog";
 import hammerImage from "/Morimori/assets/pk.png";
-import mobileStartImage from "/Morimori/assets/unnamed (4).jpg";
-import desktopStartImage from "/Morimori/assets/unnamed (5).jpg";
-import mobileBgImage from "/Morimori/assets/unnamed (1).jpg";
+import mobileStartImage from "/Morimori/assets/unnamed(4).jpg";
+import desktopStartImage from "/Morimori/assets/unnamed(5).jpg";
+import mobileBgImage from "/Morimori/assets/unnamed(1).jpg";
 import desktopBgImage from "/Morimori/assets/unnamed.jpg";
 
 const GAME_DURATION = 30;
